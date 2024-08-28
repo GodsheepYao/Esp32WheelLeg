@@ -1,6 +1,8 @@
 {
 	"C_Cpp.errorSquiggles": "disabled",
 	"files.associations": {
-		"pid.h": "c"
+		"pid.h": "c",
+		"candrive.h": "c",
+		"esp_task_wdt.h": "c"
 	}
 }

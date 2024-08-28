@@ -18,6 +18,9 @@
 #include <esp_task_wdt.h>
 #include <string.h>
 #include <debug.h>
+#include "MWMotor.h"
+#include "MotorProcess.h"
+#include "CANDrive.h"
 
 /*******************宏定义*******************/
 
@@ -176,19 +179,6 @@ float Motor_CalcRevVolt2804(float speed)
 	return 0.000004f * speed * speed * speed - 0.0003f * speed * speed + 0.0266f * speed;
 }
 
-//初始化所有电机对象
-//各个参数需要通过实际测量或拟合得到
-void Motor_InitAll()
-{
-	Motor_Init(&leftJoint[0], 1.431, 7, 0.0316f, -1, Motor_CalcRevVolt4010);
-	Motor_Init(&leftJoint[1], -7.76, 7, 0.0317f, 1, Motor_CalcRevVolt4010);
-	Motor_Init(&leftWheel, 0, 4.0f, 0.0096f, 1, Motor_CalcRevVolt2804);
-	Motor_Init(&rightJoint[0], 0.343, 7, 0.0299f, -1, Motor_CalcRevVolt4010);
-	Motor_Init(&rightJoint[1], -2.446, 7, 0.0321f, -1, Motor_CalcRevVolt4010);
-	Motor_Init(&rightWheel, 0, 4.0f, 0.0101f, 1, Motor_CalcRevVolt2804);
-	xTaskCreate(Motor_SendTask, "Motor_SendTask", 2048, NULL, 5, NULL);
-}
-
 //从CAN总线接收到的数据中解析出电机角度和速度
 void Motor_Update(Motor *motor, uint8_t *data)
 {
@@ -266,63 +256,6 @@ void CAN_RecvCallback(uint32_t id, uint8_t *data)
 		Motor_Update(&rightWheel, data);
 		break;
 	}
-}
-
-//CAN数据帧轮询接收任务
-void CAN_RecvTask(void *arg)
-{
-	twai_message_t msg;
-	twai_status_info_t status;
-	
-	TickType_t xLastWakeTime = xTaskGetTickCount();
-	while (1)
-	{
-		twai_get_status_info(&status);
-		for(uint8_t i = 0; i < status.msgs_to_rx; i++)
-		{
-			if(twai_receive(&msg, 0) == ESP_OK)
-				CAN_RecvCallback(msg.identifier, msg.data);
-		}
-		vTaskDelayUntil(&xLastWakeTime, 2); //2ms轮询一次
-	}
-}
-
-//CAN通信外设初始化
-void CAN_Init()
-{
-	twai_general_config_t twai_conf = {
-		.mode = TWAI_MODE_NORMAL,
-		.tx_io = GPIO_NUM_6,
-		.rx_io = GPIO_NUM_7,
-		.clkout_io = TWAI_IO_UNUSED,
-		.bus_off_io = TWAI_IO_UNUSED,
-		.tx_queue_len = 5,
-		.rx_queue_len = 10,
-		.alerts_enabled = TWAI_ALERT_NONE,
-		.clkout_divider = 0,
-		.intr_flags = ESP_INTR_FLAG_LEVEL1};
-
-	twai_timing_config_t twai_timing = TWAI_TIMING_CONFIG_1MBITS();
-
-	twai_filter_config_t twai_filter = {
-		.acceptance_code = 0x00000000,
-		.acceptance_mask = 0xFFFFFFFF,
-		.single_filter = true};
-
-	twai_driver_install(&twai_conf, &twai_timing, &twai_filter);
-	twai_start();
-	xTaskCreate(CAN_RecvTask, "CAN_RecvTask", 2048, NULL, 5, NULL);
-}
-
-//发送一帧CAN数据(data为8字节数据)
-void CAN_SendFrame(uint32_t id, uint8_t *data)
-{
-	twai_message_t msg;
-	msg.flags = 0;
-	msg.identifier = id;
-	msg.data_length_code = 8;
-	memcpy(msg.data, data, 8);
-	twai_transmit(&msg, 100);
 }
 
 /******* 陀螺仪模块 *******/
@@ -877,9 +810,15 @@ void setup()
 
 	//上电后等待5s
 	digitalWrite(10, HIGH);
-	vTaskDelay(5000);
+	vTaskDelay(3000);
 	digitalWrite(10, LOW);
 
+	MWRegisterMotor(MWjoint1);
+	MWRegisterMotor(MWjoint2);
+	MWRegisterMotor(MWwheel3);
+	MWRegisterMotor(MWjoint4);
+	MWRegisterMotor(MWjoint5);
+	MWRegisterMotor(MWwheel6);
 	//初始化所有模块
 	Serial_Init();
 	ADC_Init();
