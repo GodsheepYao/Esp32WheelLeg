@@ -65,7 +65,7 @@ extern void Beep_IRQHandler(void);
 /* USER CODE END EV */
 
 /******************************************************************************/
-/*           Cortex-M3 Processor Interruption and Exception Handlers          */ 
+/*           Cortex-M3 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
   * @brief This function handles Non maskable interrupt.
@@ -287,4 +287,3 @@ void TIM3_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

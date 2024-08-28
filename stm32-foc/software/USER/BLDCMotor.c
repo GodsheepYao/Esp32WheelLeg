@@ -1,7 +1,7 @@
 /************************************************
-±¾ÎÄ¼şÖ÷ÒªÀ´×ÔCSDN²©Ö÷loop222¶ÔSimpleFOCÏîÄ¿µÄÒÆÖ²
-Ô­½Ì³Ì£ºhttps://blog.csdn.net/loop222/article/details/120471390
-±¾ÏîÄ¿É¾³ıÁË²¿·Ö´úÂë£¬Ìí¼ÓÁËFlashÊı¾İ¶ÁÈ¡ºÍ¶Ô·äÃù¹¦ÄÜµÄ¼æÈİ
+æœ¬æ–‡ä»¶ä¸»è¦æ¥è‡ªCSDNåšä¸»loop222å¯¹SimpleFOCé¡¹ç›®çš„ç§»æ¤
+åŸæ•™ç¨‹ï¼šhttps://blog.csdn.net/loop222/article/details/120471390
+æœ¬é¡¹ç›®åˆ é™¤äº†éƒ¨åˆ†ä»£ç ï¼Œæ·»åŠ äº†Flashæ•°æ®è¯»å–å’Œå¯¹èœ‚é¸£åŠŸèƒ½çš„å…¼å®¹
 ************************************************/
 
 #include "BLDCmotor.h"
@@ -46,10 +46,10 @@ void Motor_init(void)
 /******************************************************************************/
 void Motor_initFOC(void)
 {
-	if(Flash_ReadMotorParam(&pole_pairs, &zero_electric_angle, (int*)&sensor_direction) == -1) //³¢ÊÔ¶ÁÈ¡FlashÊı¾İ
+	if(Flash_ReadMotorParam(&pole_pairs, &zero_electric_angle, (int*)&sensor_direction) == -1) //å°è¯•è¯»å–Flashæ•°æ®
 	{
-		if(alignSensor()) //¶ÁÈ¡Ê¶±ğÔò½øĞĞµç»úĞ£×¼£¬¼ì²âÁãµãÆ«ÒÆÁ¿ºÍ¼«¶ÔÊı
-			Flash_SaveMotorParam(pole_pairs, zero_electric_angle, sensor_direction); //Ğ£×¼Êı¾İ´æÈëFlash
+		if(alignSensor()) //è¯»å–è¯†åˆ«åˆ™è¿›è¡Œç”µæœºæ ¡å‡†ï¼Œæ£€æµ‹é›¶ç‚¹åç§»é‡å’Œæå¯¹æ•°
+			Flash_SaveMotorParam(pole_pairs, zero_electric_angle, sensor_direction); //æ ¡å‡†æ•°æ®å­˜å…¥Flash
 	}
 	
 	//added the shaft_angle update
@@ -93,10 +93,10 @@ int alignSensor(void)
 	printf("end_angle=%.4f\r\n",end_angle);
 	
 	moved =  fabs(mid_angle - end_angle);
-	if((mid_angle == end_angle)||(moved < 0.02))  //ÏàµÈ»òÕß¼¸ºõÃ»ÓĞ¶¯
+	if((mid_angle == end_angle)||(moved < 0.02))  //ç›¸ç­‰æˆ–è€…å‡ ä¹æ²¡æœ‰åŠ¨
 	{
 		printf("MOT: Failed to notice movement loop222.\r\n");
-		M1_Disable;    //µç»ú¼ì²â²»Õı³££¬¹Ø±ÕÇı¶¯
+		M1_Disable;    //ç”µæœºæ£€æµ‹ä¸æ­£å¸¸ï¼Œå…³é—­é©±åŠ¨
 		return 0;
 	}
 	else if(mid_angle < end_angle)
@@ -111,18 +111,18 @@ int alignSensor(void)
 	}
 	
 	
-	printf("MOT: PP check: ");    //¼ÆËãPole_Pairs
+	printf("MOT: PP check: ");    //è®¡ç®—Pole_Pairs
 	if( fabs(moved*pole_pairs - _2PI) > 0.5 )  // 0.5 is arbitrary number it can be lower or higher!
 	{
 		printf("fail - estimated pp:");
-		pole_pairs=_2PI/moved+0.5;     //¸¡µãÊı×ªÕûĞÎ£¬ËÄÉáÎåÈë
+		pole_pairs=_2PI/moved+0.5;     //æµ®ç‚¹æ•°è½¬æ•´å½¢ï¼Œå››èˆäº”å…¥
 		printf("%d\r\n",pole_pairs);
   }
 	else
 		printf("OK!\r\n");
 	
 	
-	setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);  //¼ÆËãÁãµãÆ«ÒÆ½Ç¶È
+	setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);  //è®¡ç®—é›¶ç‚¹åç§»è§’åº¦
 	HAL_Delay(700);
 	zero_electric_angle = _normalizeAngle(_electricalAngle(sensor_direction*getAngle(), pole_pairs));
 	HAL_Delay(20);
@@ -156,7 +156,7 @@ void loopFOC(void)
 	}
 	// set the phase voltage - FOC heart function :)
 	extern uint8_t beepPlaying;
-	if(beepPlaying == 0) //Ã»ÔÚ·äÃù×´Ì¬ÔòÕı³£Êä³öµçÑ¹
+	if(beepPlaying == 0) //æ²¡åœ¨èœ‚é¸£çŠ¶æ€åˆ™æ­£å¸¸è¾“å‡ºç”µå‹
 		setPhaseVoltage(voltage.q, voltage.d, electrical_angle);
 }
 /******************************************************************************/

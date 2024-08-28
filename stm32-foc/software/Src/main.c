@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
@@ -37,12 +36,12 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-//ÓÃÓÚ·äÃùµÄÒô·û
+//ç”¨äºèœ‚é¸£çš„éŸ³ç¬¦
 enum
 {
-	//²»Ïì
+	//ä¸å“
 	T_None=0,
-	//µÍ°Ë¶È
+	//ä½å…«åº¦
   T_L1=3822,
   T_L2=3405,
   T_L3=3034,
@@ -50,7 +49,7 @@ enum
   T_L5=2551,
   T_L6=2272,
   T_L7=2052,
-	//ÖĞ°Ë¶È
+	//ä¸­å…«åº¦
   T_M1=1911,
   T_M2=1703,
   T_M3=1517,
@@ -58,7 +57,7 @@ enum
   T_M5=1276,
   T_M6=1136,
   T_M7=1012,
-	//¸ß°Ë¶È
+	//é«˜å…«åº¦
   T_H1=956,
   T_H2=851,
   T_H3=758,
@@ -68,7 +67,7 @@ enum
   T_H7=506
 };
 
-//¿¨¶ûÂüÂË²¨½á¹¹Ìå
+//å¡å°”æ›¼æ»¤æ³¢ç»“æ„ä½“
 typedef struct{
 	float X_last;
 	float X_mid;
@@ -90,21 +89,21 @@ typedef struct{
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define VOLT_SUPPLY 12 //¹©µçÄ¸ÏßµçÑ¹
-#define MAX_VOLT 6.9f  //ÏŞÖÆ¹©µçµçÑ¹(Æ½¾ùÖµ)£¬×î¸ßÎªVOLT_SUPPLY/¡Ì3; 4010µç»ú:6.9V, 2804µç»ú:4V
+#define VOLT_SUPPLY 12 //ä¾›ç”µæ¯çº¿ç”µå‹
+#define MAX_VOLT 6.9f  //é™åˆ¶ä¾›ç”µç”µå‹(å¹³å‡å€¼)ï¼Œæœ€é«˜ä¸ºVOLT_SUPPLY/âˆš3; 4010ç”µæœº:6.9V, 2804ç”µæœº:4V
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-float targetVotage = 0;    //µ±Ç°Ä¿±êµçÑ¹
-uint8_t beepPlaying = 0;   //µ±Ç°ÊÇ·ñÔÚ·äÃù×´Ì¬
-uint8_t motorID = 1;       //³õÊ¼µç»úID
-uint8_t ledBlink = 1;      //ledÊÇ·ñ´¦ÓÚÕı³£ÉÁË¸Ä£Ê½
-float speed = 0;           //´«¸ĞÆ÷×÷²îÊı¾İËùµÃ×ªËÙ
-float filteredAngle = 0;   //¾­ÂË²¨µÃµ½µÄ×ª×Ó½Ç¶È
-uint32_t lastRecvTime = 0; //ÉÏ´ÎÊÕµ½CANÊı¾İÖ¡µÄÊ±¼ä
-Kalman angleFilter; //¿¨¶ûÂüÂË²¨½á¹¹Ìå
+float targetVotage = 0;    //å½“å‰ç›®æ ‡ç”µå‹
+uint8_t beepPlaying = 0;   //å½“å‰æ˜¯å¦åœ¨èœ‚é¸£çŠ¶æ€
+uint8_t motorID = 1;       //åˆå§‹ç”µæœºID
+uint8_t ledBlink = 1;      //ledæ˜¯å¦å¤„äºæ­£å¸¸é—ªçƒæ¨¡å¼
+float speed = 0;           //ä¼ æ„Ÿå™¨ä½œå·®æ•°æ®æ‰€å¾—è½¬é€Ÿ
+float filteredAngle = 0;   //ç»æ»¤æ³¢å¾—åˆ°çš„è½¬å­è§’åº¦
+uint32_t lastRecvTime = 0; //ä¸Šæ¬¡æ”¶åˆ°CANæ•°æ®å¸§çš„æ—¶é—´
+Kalman angleFilter; //å¡å°”æ›¼æ»¤æ³¢ç»“æ„ä½“
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,14 +116,14 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 int fputc(int ch, FILE *f) { return ch; }
 
-//µ¥Æ¬»úÈí¼ş¸´Î»
+//å•ç‰‡æœºè½¯ä»¶å¤ä½
 void System_Reset(void)
 {
 	__set_FAULTMASK(1);
 	NVIC_SystemReset();
 }
 
-/*************¿¨¶ûÂüÂË²¨*************/
+/*************å¡å°”æ›¼æ»¤æ³¢*************/
 
 void Kalman_Init(Kalman* p,float T_Q,float T_R)
 {
@@ -150,9 +149,9 @@ float Kalman_Filter(Kalman* p,float dat)
 	return p->X_now;
 }
 
-/*************CANÍ¨ĞÅ*************/
+/*************CANé€šä¿¡*************/
 
-//CANÍâÉè³õÊ¼»¯
+//CANå¤–è®¾åˆå§‹åŒ–
 void CAN_Init()
 {
 	CAN_FilterTypeDef filter;
@@ -171,7 +170,7 @@ void CAN_Init()
 	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 }
 
-//·¢ËÍÒ»¸ö·´À¡Êı¾İÖ¡
+//å‘é€ä¸€ä¸ªåé¦ˆæ•°æ®å¸§
 void CAN_SendState(float angle, float speed)
 {
 	CAN_TxHeaderTypeDef header;
@@ -181,14 +180,14 @@ void CAN_SendState(float angle, float speed)
 	header.DLC = 8;
 	
 	uint8_t data[8];
-	memcpy(data,&(int32_t){angle*1000},4); //½Ç¶ÈÊı¾İ·ÅÔÚÇ°ËÄ¸ö×Ö½Ú
-	memcpy(&data[4],&(int16_t){speed*10},2); //×ªËÙÊı¾İ·ÅÔÚµÚ5-6×Ö½Ú
+	memcpy(data,&(int32_t){angle*1000},4); //è§’åº¦æ•°æ®æ”¾åœ¨å‰å››ä¸ªå­—èŠ‚
+	memcpy(&data[4],&(int16_t){speed*10},2); //è½¬é€Ÿæ•°æ®æ”¾åœ¨ç¬¬5-6å­—èŠ‚
 	
 	uint32_t mailbox;
 	HAL_CAN_AddTxMessage(&hcan, &header, data, &mailbox);
 }
 
-//CANÊÕµ½Êı¾İµÄÖĞ¶Ï»Øµ÷
+//CANæ”¶åˆ°æ•°æ®çš„ä¸­æ–­å›è°ƒ
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	CAN_RxHeaderTypeDef header;
@@ -197,12 +196,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &header, rxData) != HAL_OK)
 		return;
 	
-	if(header.StdId == 0x100 && motorID <= 4) //ID=1~4½ÓÊÕ0x100Êı¾İÖ¡
+	if(header.StdId == 0x100 && motorID <= 4) //ID=1~4æ¥æ”¶0x100æ•°æ®å¸§
 	{
 		targetVotage = *(int16_t*)&rxData[(motorID-1)*2] / 1000.0f;
 		lastRecvTime = HAL_GetTick();
 	}
-	else if(header.StdId == 0x200 && motorID > 4) //ID=5~8½ÓÊÕ0x200Êı¾İÖ¡
+	else if(header.StdId == 0x200 && motorID > 4) //ID=5~8æ¥æ”¶0x200æ•°æ®å¸§
 	{
 		targetVotage = *(int16_t*)&rxData[(motorID-5)*2] / 1000.0f;
 		lastRecvTime = HAL_GetTick();
@@ -213,27 +212,27 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 void SimpleFOC_Init()
 {
-	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1); //¿ªÆôÈı¸öPWMÍ¨µÀÊä³ö
+	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1); //å¼€å¯ä¸‰ä¸ªPWMé€šé“è¾“å‡º
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_3);
 	
-	MagneticSensor_Init(); //³õÊ¼»¯´Å´«¸ĞÆ÷
+	MagneticSensor_Init(); //åˆå§‹åŒ–ç£ä¼ æ„Ÿå™¨
 	
-	voltage_power_supply=VOLT_SUPPLY; //Éè¶¨FOCËùĞè²ÎÊı
+	voltage_power_supply=VOLT_SUPPLY; //è®¾å®šFOCæ‰€éœ€å‚æ•°
 	voltage_limit=MAX_VOLT;
 	voltage_sensor_align=voltage_limit;
 	targetVotage=0;
 	
-	Motor_init(); //³õÊ¼»¯µç»úĞÅÏ¢
-	Motor_initFOC(); //³õÊ¼»¯FOC²ÎÊı
+	Motor_init(); //åˆå§‹åŒ–ç”µæœºä¿¡æ¯
+	Motor_initFOC(); //åˆå§‹åŒ–FOCå‚æ•°
 	
-	motorID = Flash_ReadMotorID(); //´ÓFlash¶ÁÈ¡µç»úID
+	motorID = Flash_ReadMotorID(); //ä»Flashè¯»å–ç”µæœºID
 	motorID = motorID ? motorID : 1;
 }
 
-/*************·äÃù*************/
+/*************èœ‚é¸£*************/
 
-//¸ù¾İ·äÃùÖÜÆÚÅäÖÃ²¢´¥·¢¶¨Ê±Æ÷
+//æ ¹æ®èœ‚é¸£å‘¨æœŸé…ç½®å¹¶è§¦å‘å®šæ—¶å™¨
 void Beep_Play(uint16_t period)
 {
 	if(period!=0)
@@ -249,7 +248,7 @@ void Beep_Play(uint16_t period)
 	}
 }
 
-//²¥·ÅÒ»´®Òô·û
+//æ’­æ”¾ä¸€ä¸²éŸ³ç¬¦
 void Beep_PlayNotes(uint8_t num, uint16_t notes[][2])
 {
 	for(uint8_t i=0; i<num; i++)
@@ -260,34 +259,34 @@ void Beep_PlayNotes(uint8_t num, uint16_t notes[][2])
 	Beep_Play(0);
 }
 
-//·äÃùÖĞ¶Ï´¦Àí£¬ÔÚ¶¨Ê±Æ÷ÖĞ¶Ï»Øµ÷ÖĞµ÷ÓÃ
+//èœ‚é¸£ä¸­æ–­å¤„ç†ï¼Œåœ¨å®šæ—¶å™¨ä¸­æ–­å›è°ƒä¸­è°ƒç”¨
 void Beep_IRQHandler()
 {
 	static uint8_t flipFlag = 0;
 	if(targetVotage == 0)
 	{
-		setPhaseVoltage(voltage_limit/2, 0, _PI/3 * flipFlag); //Ê¹´Å³¡·½ÏòÔÚ0-PI/3¼äÕğµ´
+		setPhaseVoltage(voltage_limit/2, 0, _PI/3 * flipFlag); //ä½¿ç£åœºæ–¹å‘åœ¨0-PI/3é—´éœ‡è¡
 		flipFlag = !flipFlag;
 	}
 }
 
-/*************¸÷¸ö¶¨Ê±ÈÎÎñ*************/
+/*************å„ä¸ªå®šæ—¶ä»»åŠ¡*************/
 
-//·Ç×èÈû°´¼ü´¦Àí
+//éé˜»å¡æŒ‰é”®å¤„ç†
 void Key_Process()
 {
 	static uint32_t downTime = 0;
 	static uint8_t lastKeyState = 0;
 	uint8_t keyState = (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3) == GPIO_PIN_RESET) ? 1 : 0;
-	if(keyState && !lastKeyState) //°´ÏÂ
+	if(keyState && !lastKeyState) //æŒ‰ä¸‹
 	{
 		downTime = HAL_GetTick();
 		ledBlink = 0;
 	}
-	else if(keyState && lastKeyState) //°´×¡
+	else if(keyState && lastKeyState) //æŒ‰ä½
 	{
 		uint32_t pressTime = HAL_GetTick() - downTime;
-		if(pressTime < 500*8) //ÉÁ8ÏÂ£¬Ã¿´Î500ms
+		if(pressTime < 500*8) //é—ª8ä¸‹ï¼Œæ¯æ¬¡500ms
 		{
 			if(pressTime%500 < 100)
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
@@ -297,17 +296,17 @@ void Key_Process()
 		else if(pressTime < 500*12)
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 		else
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); //ÉÁ8ÏÂÖ®ºó³£ÁÁ
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET); //é—ª8ä¸‹ä¹‹åå¸¸äº®
 	}
-	else if(!keyState && lastKeyState) //ËÉ¿ª
+	else if(!keyState && lastKeyState) //æ¾å¼€
 	{
 		uint32_t pressTime = HAL_GetTick() - downTime;
-		if(pressTime > 50 && pressTime <500*8) //ÉÁ8ÏÂÒÔÄÚËÉ¿ª£¬ÉèÖÃID
+		if(pressTime > 50 && pressTime <500*8) //é—ª8ä¸‹ä»¥å†…æ¾å¼€ï¼Œè®¾ç½®ID
 		{
 			motorID = pressTime/500 + 1;
 			Flash_SaveMotorID(motorID);
 		}
-		else if(pressTime >= 500*8 && pressTime < 500*12) //ÉÁ8ÏÂºóËÉ¿ª£¬Çå¿ÕFlashºó¸´Î»ÖØĞÂĞ£×¼
+		else if(pressTime >= 500*8 && pressTime < 500*12) //é—ª8ä¸‹åæ¾å¼€ï¼Œæ¸…ç©ºFlashåå¤ä½é‡æ–°æ ¡å‡†
 		{
 			Flash_EraseMotorParam();
 			System_Reset();
@@ -318,7 +317,7 @@ void Key_Process()
 	lastKeyState = keyState;
 }
 
-//·Ç×èÈûLED¶¨Ê±ÈÎÎñ£¬ÉÁË¸´ÎÊı±íÊ¾µç»úID
+//éé˜»å¡LEDå®šæ—¶ä»»åŠ¡ï¼Œé—ªçƒæ¬¡æ•°è¡¨ç¤ºç”µæœºID
 void Led_Process()
 {
 	if(!ledBlink) return;
@@ -330,11 +329,11 @@ void Led_Process()
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 }
 
-//µç»ú×ªËÙ¼ÆËã
+//ç”µæœºè½¬é€Ÿè®¡ç®—
 void Motor_SpeedCalcProcess()
 {
 	const uint8_t speedLpfLen = 5;
-	static float speedLpfBuf[speedLpfLen] = {0}; //´æ·Å5¸öfilteredAngle
+	static float speedLpfBuf[speedLpfLen] = {0}; //å­˜æ”¾5ä¸ªfilteredAngle
 	
 	float angle = filteredAngle;
 	float curSpeed = (angle-speedLpfBuf[0])*1000/speedLpfLen/_2PI*60;
@@ -345,7 +344,7 @@ void Motor_SpeedCalcProcess()
 	speedLpfBuf[speedLpfLen-1] = angle;
 }
 
-//CANÀëÏß¼ì²â£¬500msÃ»ÊÕµ½CANĞÅºÅÔòÍ£»ú
+//CANç¦»çº¿æ£€æµ‹ï¼Œ500msæ²¡æ”¶åˆ°CANä¿¡å·åˆ™åœæœº
 void Motor_OfflineCheckProcess()
 {
 	static uint8_t isOffline = 0;
@@ -361,7 +360,7 @@ void Motor_OfflineCheckProcess()
 		isOffline = 0;
 }
 
-//ÔÚµÎ´ğ¶¨Ê±Æ÷ÖĞµ÷ÓÃ£¬1msÖÜÆÚ£¬´¦Àí¸÷¶¨Ê±ÈÎÎñ
+//åœ¨æ»´ç­”å®šæ—¶å™¨ä¸­è°ƒç”¨ï¼Œ1mså‘¨æœŸï¼Œå¤„ç†å„å®šæ—¶ä»»åŠ¡
 void SysTick_UserExec()
 {
 	Key_Process();
@@ -380,6 +379,7 @@ void SysTick_UserExec()
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -408,11 +408,11 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 	
-	CAN_Init(); //CANÍâÉè³õÊ¼»¯
-	SimpleFOC_Init(); //FOC³õÊ¼»¯
-	Beep_PlayNotes(3,(uint16_t[][2]){{T_H1,200},{T_H3,200},{T_H5,500}}); //²¥·Å¿ª»úÒôĞ§
+	CAN_Init(); //CANå¤–è®¾åˆå§‹åŒ–
+	SimpleFOC_Init(); //FOCåˆå§‹åŒ–
+	Beep_PlayNotes(3,(uint16_t[][2]){{T_H1,200},{T_H3,200},{T_H5,500}}); //æ’­æ”¾å¼€æœºéŸ³æ•ˆ
 	
-	Kalman_Init(&angleFilter, 0.0005f, 0.1f); //Éè¶¨¿¨¶ûÂüÂË²¨ÏµÊı
+	Kalman_Init(&angleFilter, 0.0005f, 0.1f); //è®¾å®šå¡å°”æ›¼æ»¤æ³¢ç³»æ•°
 	
   /* USER CODE END 2 */
 
@@ -420,8 +420,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		setTargetVotage(targetVotage); //Éè¶¨FOCµçÑ¹
-		loopFOC(); //ÔËĞĞFOCËã·¨
+		setTargetVotage(targetVotage); //è®¾å®šFOCç”µå‹
+		loopFOC(); //è¿è¡ŒFOCç®—æ³•
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -438,7 +438,8 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -450,7 +451,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+
+  /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -490,12 +492,10 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -440,12 +440,11 @@ ARM Macro Assembler    Page 7
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
 ork --depend=c6t6simplefoc\startup_stm32f103x6.d -oc6t6simplefoc\startup_stm32f
-103x6.o -IF:\Sketches\Git\foc-wheel-legged-robot\stm32-foc\software\MDK-ARM\RTE
- -I"D:\Program Files\Keil5\ARM\PACK\ARM\CMSIS\5.7.0\CMSIS\Core\Include" -I"D:\P
-rogram Files\Keil5\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include" --predefin
-e="__MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 521" --predefine="_RT
-E_ SETA 1" --predefine="STM32F10X_LD SETA 1" --list=startup_stm32f103x6.lst sta
-rtup_stm32f103x6.s
+103x6.o -I.\RTE\_C6T6SimpleFoc -ID:\KeilV5Pack\ARM\CMSIS\6.1.0\CMSIS\Core\Inclu
+de -ID:\KeilV5Pack\Keil\STM32F1xx_DFP\2.3.0\Device\Include --predefine="__MICRO
+LIB SETA 1" --predefine="__UVISION_VERSION SETA 540" --predefine="STM32F10X_LD 
+SETA 1" --predefine="_RTE_ SETA 1" --list=startup_stm32f103x6.lst startup_stm32
+f103x6.s
 
 
 

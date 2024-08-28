@@ -1,11 +1,11 @@
 #include "FlashStorage.h"
 #include <string.h>
 
-#define FLASH_STORAGE_PARAM_ADDR 0x08007800 //µç»ú½á¹¹²ÎÊı´æÔÚFlashµÚ30Ò³
-#define FLASH_STORAGE_ID_ADDR 0x08007C00 //µç»úID´æÔÚFlashµÚ31Ò³
-#define FLASH_STORAGE_AVAIL_FLAG 0xA5A5A5A5 //FlashÊı¾İÓĞĞ§±êÖ¾
+#define FLASH_STORAGE_PARAM_ADDR 0x08007800 //ç”µæœºç»“æ„å‚æ•°å­˜åœ¨Flashç¬¬30é¡µ
+#define FLASH_STORAGE_ID_ADDR 0x08007C00 //ç”µæœºIDå­˜åœ¨Flashç¬¬31é¡µ
+#define FLASH_STORAGE_AVAIL_FLAG 0xA5A5A5A5 //Flashæ•°æ®æœ‰æ•ˆæ ‡å¿—
 
-//²Á³ıµç»ú½á¹¹²ÎÊı
+//æ“¦é™¤ç”µæœºç»“æ„å‚æ•°
 void Flash_EraseMotorParam()
 {
 	HAL_FLASH_Unlock();
@@ -18,7 +18,7 @@ void Flash_EraseMotorParam()
 	HAL_FLASH_Lock();
 }
 
-//½«µç»ú½á¹¹²ÎÊı´æÈëFlash
+//å°†ç”µæœºç»“æ„å‚æ•°å­˜å…¥Flash
 void Flash_SaveMotorParam(int poles, float zero_elec_angle, int dir)
 {
 	HAL_FLASH_Unlock();
@@ -40,7 +40,7 @@ void Flash_SaveMotorParam(int poles, float zero_elec_angle, int dir)
 	HAL_FLASH_Lock();
 }
 
-//´ÓFlashÖĞ¶ÁÈ¡µç»ú½á¹¹²ÎÊı
+//ä»Flashä¸­è¯»å–ç”µæœºç»“æ„å‚æ•°
 int Flash_ReadMotorParam(int* poles, float* zero_elec_angle, int* dir)
 {
 	uint32_t *buf = (uint32_t*)FLASH_STORAGE_PARAM_ADDR;
@@ -52,7 +52,7 @@ int Flash_ReadMotorParam(int* poles, float* zero_elec_angle, int* dir)
 	return 0;
 }
 
-//½«µç»úID´æÈëFlash
+//å°†ç”µæœºIDå­˜å…¥Flash
 void Flash_SaveMotorID(uint8_t id)
 {
 	HAL_FLASH_Unlock();
@@ -69,7 +69,7 @@ void Flash_SaveMotorID(uint8_t id)
 	HAL_FLASH_Lock();
 }
 
-//´ÓFlashÖĞ¶ÁÈ¡µç»úID
+//ä»Flashä¸­è¯»å–ç”µæœºID
 uint8_t Flash_ReadMotorID()
 {
 	uint32_t *buf = (uint32_t*)FLASH_STORAGE_ID_ADDR;
