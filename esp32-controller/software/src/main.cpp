@@ -319,12 +319,12 @@ void IMU_Init()
 	Serial.println("Address: 0x" + String(mpu.getDeviceID(), HEX));
 	mpu.setFullScaleAccelRange(MPU6050_IMU::MPU6050_ACCEL_FS_16);
 	while(mpu.dmpInitialize() != 0);
-	mpu.setXAccelOffset(606);
-	mpu.setYAccelOffset(-275);
-	mpu.setZAccelOffset(1392);
-	mpu.setXGyroOffset(171);
+	mpu.setXAccelOffset(786);
+	mpu.setYAccelOffset(-295);
+	mpu.setZAccelOffset(1394);
+	mpu.setXGyroOffset(169);
 	mpu.setYGyroOffset(12);
-	mpu.setZGyroOffset(-12);
+	mpu.setZGyroOffset(-17);
 	// mpu.CalibrateAccel(6); //测量偏移数据
 	// mpu.CalibrateGyro(6);
 	// mpu.PrintActiveOffsets();
