@@ -54,32 +54,32 @@ void MotorNotice(uint8_t busId, uint8_t nodeId, MW_CMD_ID cmdId) {
 void Motor_Task(void *arg) {
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	while (1) {
-        printf("1Speed:%f  Pos:%f\r\n", MWjoint1.motorData->encoderVelEstimate, MWjoint1.motorData->encoderPosEstimate);
-        printf("2Speed:%f  Pos:%f\r\n", MWjoint2.motorData->encoderVelEstimate, MWjoint2.motorData->encoderPosEstimate);
-        printf("3Speed:%f  Pos:%f\r\n", MWwheel3.motorData->encoderVelEstimate, MWwheel3.motorData->encoderPosEstimate);
-        printf("4Speed:%f  Pos:%f\r\n", MWjoint4.motorData->encoderVelEstimate, MWjoint4.motorData->encoderPosEstimate);
-        printf("5Speed:%f  Pos:%f\r\n", MWjoint5.motorData->encoderVelEstimate, MWjoint5.motorData->encoderPosEstimate);
-        printf("6Speed:%f  Pos:%f\r\n", MWwheel6.motorData->encoderVelEstimate, MWwheel6.motorData->encoderPosEstimate);
-		vTaskDelayUntil(&xLastWakeTime, 50);
+    //     printf("1Speed:%f  Pos:%f\r\n", MWjoint1.motorData->encoderVelEstimate, MWjoint1.motorData->encoderPosEstimate);
+    //     printf("2Speed:%f  Pos:%f\r\n", MWjoint2.motorData->encoderVelEstimate, MWjoint2.motorData->encoderPosEstimate);
+    //     printf("3Speed:%f  Pos:%f\r\n", MWwheel3.motorData->encoderVelEstimate, MWwheel3.motorData->encoderPosEstimate);
+    //     printf("4Speed:%f  Pos:%f\r\n", MWjoint4.motorData->encoderVelEstimate, MWjoint4.motorData->encoderPosEstimate);
+    //     printf("5Speed:%f  Pos:%f\r\n", MWjoint5.motorData->encoderVelEstimate, MWjoint5.motorData->encoderPosEstimate);
+    //     printf("6Speed:%f  Pos:%f\r\n", MWwheel6.motorData->encoderVelEstimate, MWwheel6.motorData->encoderPosEstimate);
+		vTaskDelayUntil(&xLastWakeTime, 2);
 	}
 }
 
 /* 电机初始化 */
 void Motor_InitAll() {
-	/* 设置模式为位置滤波控制模式 */
-	MWSetControllerMode(1, 1, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
-	MWSetControllerMode(1, 2, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
-	MWSetControllerMode(1, 3, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
-    MWSetControllerMode(1, 4, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
-	MWSetControllerMode(1, 5, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
-	MWSetControllerMode(1, 6, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
+	/* 设置控制模式 */
+	MWSetControllerMode(MWjoint1.busId, MWjoint1.nodeId, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
+	MWSetControllerMode(MWjoint2.busId, MWjoint2.nodeId, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
+	MWSetControllerMode(MWwheel3.busId, MWwheel3.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
+    MWSetControllerMode(MWjoint4.busId, MWjoint4.nodeId, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
+	MWSetControllerMode(MWjoint5.busId, MWjoint5.nodeId, MW_POSITION_CONTROL, MW_POSITION_FILTERING_INPUT);
+	MWSetControllerMode(MWwheel6.busId, MWwheel6.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
 	/* 设置惯量值为0 */
-	MWSetTrajInertia(1, 1, 0);
-	MWSetTrajInertia(1, 2, 0);
-	MWSetTrajInertia(1, 3, 0);
-    MWSetTrajInertia(1, 4, 0);
-	MWSetTrajInertia(1, 5, 0);
-	MWSetTrajInertia(1, 6, 0);
+	MWSetTrajInertia(MWjoint1.busId, MWjoint1.nodeId, 0);
+	MWSetTrajInertia(MWjoint2.busId, MWjoint2.nodeId, 0);
+	MWSetTrajInertia(MWwheel3.busId, MWwheel3.nodeId, 0);
+    MWSetTrajInertia(MWjoint4.busId, MWjoint4.nodeId, 0);
+	MWSetTrajInertia(MWjoint5.busId, MWjoint5.nodeId, 0);
+	MWSetTrajInertia(MWwheel6.busId, MWwheel6.nodeId, 0);
 
     // MWSetAxisState(1, 1, MW_AXIS_STATE_MOTOR_CALIBRATION);
 	// MWSetAxisState(1, 2, MW_AXIS_STATE_MOTOR_CALIBRATION);
@@ -88,12 +88,12 @@ void Motor_InitAll() {
 	// MWSetAxisState(1, 5, MW_AXIS_STATE_MOTOR_CALIBRATION);
 	// MWSetAxisState(1, 6, MW_AXIS_STATE_MOTOR_CALIBRATION);
 	/* 进入闭环控制状态 */
-	MWSetAxisState(1, 1, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	MWSetAxisState(1, 2, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	MWSetAxisState(1, 3, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-    MWSetAxisState(1, 4, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	MWSetAxisState(1, 5, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	MWSetAxisState(1, 6, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(MWjoint1.busId, MWjoint1.nodeId, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(MWjoint2.busId, MWjoint2.nodeId, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(MWwheel3.busId, MWwheel3.nodeId, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+    MWSetAxisState(MWjoint4.busId, MWjoint4.nodeId, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(MWjoint5.busId, MWjoint5.nodeId, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(MWwheel6.busId, MWwheel6.nodeId, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
 	// /* 输入控制位置 */
     // MWPosControl(1, 1, 5, 0, 0);
     // MWPosControl(1, 2, 5, 0, 0);
