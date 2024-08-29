@@ -48,7 +48,7 @@ I (..\USER\foc_utils.h)(0x668F76B8)
 I (D:\KeilV5\ARM\ARMCC\include\math.h)(0x60252378)
 I (..\USER\BLDCmotor.h)(0x668F76B8)
 I (..\USER\MagneticSensor.h)(0x668F76B8)
-F (..\USER\MagneticSensor.c)(0x668F76B8)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../USER-I.\RTE\_C6T6SimpleFoc-ID:\KeilV5Pack\ARM\CMSIS\6.1.0\CMSIS\Core\Include-ID:\KeilV5Pack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="540" -DSTM32F10X_LD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103x6-o c6t6simplefoc\magneticsensor.o --omf_browse c6t6simplefoc\magneticsensor.crf --depend c6t6simplefoc\magneticsensor.d)
+F (..\USER\MagneticSensor.c)(0x668FA4E4)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../USER-I.\RTE\_C6T6SimpleFoc-ID:\KeilV5Pack\ARM\CMSIS\6.1.0\CMSIS\Core\Include-ID:\KeilV5Pack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="540" -DSTM32F10X_LD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103x6-o c6t6simplefoc\magneticsensor.o --omf_browse c6t6simplefoc\magneticsensor.crf --depend c6t6simplefoc\magneticsensor.d)
 I (..\USER\MagneticSensor.h)(0x668F76B8)
 I (..\USER\foc_utils.h)(0x668F76B8)
 I (D:\KeilV5\ARM\ARMCC\include\math.h)(0x60252378)
@@ -152,7 +152,7 @@ I (../USER/foc_utils.h)(0x668F76B8)
 I (D:\KeilV5\ARM\ARMCC\include\math.h)(0x60252378)
 I (../USER/BLDCmotor.h)(0x668F76B8)
 I (../USER/FlashStorage.h)(0x668F76B8)
-F (../Src/gpio.c)(0x668F76FC)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../USER-I.\RTE\_C6T6SimpleFoc-ID:\KeilV5Pack\ARM\CMSIS\6.1.0\CMSIS\Core\Include-ID:\KeilV5Pack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="540" -DSTM32F10X_LD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103x6-o c6t6simplefoc\gpio.o --omf_browse c6t6simplefoc\gpio.crf --depend c6t6simplefoc\gpio.d)
+F (../Src/gpio.c)(0x668FA4BA)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../USER-I.\RTE\_C6T6SimpleFoc-ID:\KeilV5Pack\ARM\CMSIS\6.1.0\CMSIS\Core\Include-ID:\KeilV5Pack\Keil\STM32F1xx_DFP\2.3.0\Device\Include-D__UVISION_VERSION="540" -DSTM32F10X_LD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103x6-o c6t6simplefoc\gpio.o --omf_browse c6t6simplefoc\gpio.crf --depend c6t6simplefoc\gpio.d)
 I (../Inc/gpio.h)(0x668F76FC)
 I (../Inc/main.h)(0x668F76FD)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x666943CF)

@@ -128,9 +128,6 @@ void Motor_UpdateVoltage(Motor *motor);
 void Motor_SendTask(void *arg);
 
 void CAN_RecvCallback(uint32_t id, uint8_t *data);
-void CAN_RecvTask(void *arg);
-void CAN_Init();
-void CAN_SendFrame(uint32_t id, uint8_t *data);
 
 void IMU_Task(void *arg);
 void IMU_Init();
@@ -322,12 +319,12 @@ void IMU_Init()
 	Serial.println("Address: 0x" + String(mpu.getDeviceID(), HEX));
 	mpu.setFullScaleAccelRange(MPU6050_IMU::MPU6050_ACCEL_FS_16);
 	while(mpu.dmpInitialize() != 0);
-	mpu.setXAccelOffset(-668);
-	mpu.setYAccelOffset(-1632);
-	mpu.setZAccelOffset(998);
-	mpu.setXGyroOffset(283);
-	mpu.setYGyroOffset(80);
-	mpu.setZGyroOffset(42);
+	mpu.setXAccelOffset(606);
+	mpu.setYAccelOffset(-275);
+	mpu.setZAccelOffset(1392);
+	mpu.setXGyroOffset(171);
+	mpu.setYGyroOffset(12);
+	mpu.setZGyroOffset(-12);
 	// mpu.CalibrateAccel(6); //测量偏移数据
 	// mpu.CalibrateGyro(6);
 	// mpu.PrintActiveOffsets();
@@ -462,8 +459,8 @@ void Ctrl_StandupPrepareTask(void *arg)
 //主控制任务
 void Ctrl_Task(void *arg)
 {
-	const float wheelRadius = 0.026f; //m，车轮半径
-	const float legMass = 0.05f; //kg，腿部质量
+	const float wheelRadius = 0.0625f; //m，车轮半径
+	const float legMass = 0.248f; //kg，腿部质量
 
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -770,7 +767,7 @@ void Serial_Task(void *pvParameters)
 		// Serial.printf("%f,%f\r\n",imuData.pitch,imuData.pitchSpd);
 		// Serial.printf("%p\r\n", &speedPID.kp);
 		// Serial.printf("source voltage: %f\r\n", analogRead(0) / 4095.0f * 3.3f * 11 * 12 / 13.5f);
-		vTaskDelay(50);
+		vTaskDelay(100);
 	}
 }
 
@@ -810,7 +807,7 @@ void setup()
 
 	//上电后等待5s
 	digitalWrite(10, HIGH);
-	vTaskDelay(3000);
+	vTaskDelay(5000);
 	digitalWrite(10, LOW);
 
 	MWRegisterMotor(MWjoint1);
@@ -821,7 +818,7 @@ void setup()
 	MWRegisterMotor(MWwheel6);
 	//初始化所有模块
 	Serial_Init();
-	ADC_Init();
+	// ADC_Init();
 	CAN_Init();
 	IMU_Init();
 	Motor_InitAll();

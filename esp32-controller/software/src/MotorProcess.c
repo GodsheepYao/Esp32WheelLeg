@@ -54,6 +54,12 @@ void MotorNotice(uint8_t busId, uint8_t nodeId, MW_CMD_ID cmdId) {
 void Motor_Task(void *arg) {
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	while (1) {
+        printf("1Speed:%f  Pos:%f\r\n", MWjoint1.motorData->encoderVelEstimate, MWjoint1.motorData->encoderPosEstimate);
+        printf("2Speed:%f  Pos:%f\r\n", MWjoint2.motorData->encoderVelEstimate, MWjoint2.motorData->encoderPosEstimate);
+        printf("3Speed:%f  Pos:%f\r\n", MWwheel3.motorData->encoderVelEstimate, MWwheel3.motorData->encoderPosEstimate);
+        printf("4Speed:%f  Pos:%f\r\n", MWjoint4.motorData->encoderVelEstimate, MWjoint4.motorData->encoderPosEstimate);
+        printf("5Speed:%f  Pos:%f\r\n", MWjoint5.motorData->encoderVelEstimate, MWjoint5.motorData->encoderPosEstimate);
+        printf("6Speed:%f  Pos:%f\r\n", MWwheel6.motorData->encoderVelEstimate, MWwheel6.motorData->encoderPosEstimate);
 		vTaskDelayUntil(&xLastWakeTime, 50);
 	}
 }
@@ -75,19 +81,19 @@ void Motor_InitAll() {
 	MWSetTrajInertia(1, 5, 0);
 	MWSetTrajInertia(1, 6, 0);
 
-    MWSetAxisState(1, 1, MW_AXIS_STATE_MOTOR_CALIBRATION);
-	MWSetAxisState(1, 2, MW_AXIS_STATE_MOTOR_CALIBRATION);
-	MWSetAxisState(1, 3, MW_AXIS_STATE_MOTOR_CALIBRATION);
-    MWSetAxisState(1, 4, MW_AXIS_STATE_MOTOR_CALIBRATION);
-	MWSetAxisState(1, 5, MW_AXIS_STATE_MOTOR_CALIBRATION);
-	MWSetAxisState(1, 6, MW_AXIS_STATE_MOTOR_CALIBRATION);
-	// /* 进入闭环控制状态 */
-	// MWSetAxisState(1, 1, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	// MWSetAxisState(1, 2, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	// MWSetAxisState(1, 3, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-    // MWSetAxisState(1, 4, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	// MWSetAxisState(1, 5, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
-	// MWSetAxisState(1, 6, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+    // MWSetAxisState(1, 1, MW_AXIS_STATE_MOTOR_CALIBRATION);
+	// MWSetAxisState(1, 2, MW_AXIS_STATE_MOTOR_CALIBRATION);
+	// MWSetAxisState(1, 3, MW_AXIS_STATE_MOTOR_CALIBRATION);
+    // MWSetAxisState(1, 4, MW_AXIS_STATE_MOTOR_CALIBRATION);
+	// MWSetAxisState(1, 5, MW_AXIS_STATE_MOTOR_CALIBRATION);
+	// MWSetAxisState(1, 6, MW_AXIS_STATE_MOTOR_CALIBRATION);
+	/* 进入闭环控制状态 */
+	MWSetAxisState(1, 1, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(1, 2, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(1, 3, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+    MWSetAxisState(1, 4, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(1, 5, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
+	MWSetAxisState(1, 6, MW_AXIS_STATE_CLOSED_LOOP_CONTROL);
 	// /* 输入控制位置 */
     // MWPosControl(1, 1, 5, 0, 0);
     // MWPosControl(1, 2, 5, 0, 0);
@@ -95,6 +101,14 @@ void Motor_InitAll() {
     // MWPosControl(1, 4, 5, 0, 0);
     // MWPosControl(1, 5, 5, 0, 0);
 	// MWPosControl(1, 6, 5, 0, 0);
+
+    // Motor_Init(&leftJoint[0], 1.431, 7, 0.0316f, -1, Motor_CalcRevVolt4010);
+	// Motor_Init(&leftJoint[1], -7.76, 7, 0.0317f, 1, Motor_CalcRevVolt4010);
+	// Motor_Init(&leftWheel, 0, 4.0f, 0.0096f, 1, Motor_CalcRevVolt2804);
+	// Motor_Init(&rightJoint[0], 0.343, 7, 0.0299f, -1, Motor_CalcRevVolt4010);
+	// Motor_Init(&rightJoint[1], -2.446, 7, 0.0321f, -1, Motor_CalcRevVolt4010);
+	// Motor_Init(&rightWheel, 0, 4.0f, 0.0101f, 1, Motor_CalcRevVolt2804);
+
 	xTaskCreate(Motor_Task, "Motor_Task", 2048, NULL, 5, NULL);
 }
 
