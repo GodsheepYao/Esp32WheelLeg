@@ -1,11 +1,14 @@
-#include "CANDrive.h"
-#include <esp_task_wdt.h>
 #include <Arduino.h>
+#include <esp_task_wdt.h>
 #include "MWMotor.h"
+#include "MotorProcess.h"
+#include "CANDrive.h"
 
 twai_message_t msg;
 twai_status_info_t status;
 
+/******* CAN通信模块 *******/
+/* CAN接收任务 */
 void CAN_RecvTask(void *arg)
 {
 	twai_message_t msg;
@@ -15,13 +18,37 @@ void CAN_RecvTask(void *arg)
 	while (1) {
 		twai_get_status_info(&status);
 		for(uint8_t i = 0; i < status.msgs_to_rx; i++) {
-			if(twai_receive(&msg, 0) == ESP_OK)
+			if(twai_receive(&msg, 0) == ESP_OK) {
 				MWReceiver(1, msg.identifier, msg.data);
+				uint8_t nodeId = msg.identifier >> 5;
+				switch (nodeId) //根据CAN ID更新各电机数据
+				{
+					case 0x01:
+						Motor_Update(&rightJoint[0], &MWjointData1);
+						break;
+					case 0x02:
+						Motor_Update(&rightJoint[1], &MWjointData2);
+						break;
+					case 0x03:
+						Motor_Update(&rightWheel, &MWwheelData3);
+						break;
+					case 0x04:
+						Motor_Update(&leftJoint[1], &MWjointData4);
+						break;
+					case 0x05:
+						Motor_Update(&leftJoint[0], &MWjointData5);
+						break;
+					case 0x06:
+						Motor_Update(&leftWheel, &MWwheelData6);
+						break;
+				}
+			}
 		}
 		vTaskDelayUntil(&xLastWakeTime, 2); //2ms轮询一次
 	}
 }
 
+/* CAN发送 */
 void CAN_SendFrame(uint32_t id, uint8_t *data) {
 	msg.flags = 0;
 	msg.identifier = id;
@@ -30,6 +57,7 @@ void CAN_SendFrame(uint32_t id, uint8_t *data) {
 	twai_transmit(&msg, 100);
 }
 
+/* CAN初始化 */
 void CAN_Init(void)
 {
 	twai_general_config_t twai_conf = {

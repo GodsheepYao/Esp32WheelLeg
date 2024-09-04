@@ -1,8 +1,8 @@
 /*
  * File: lqr_k.h
  *
- * MATLAB Coder version            : 5.5
- * C/C++ source code generated on  : 27-Jan-2023 15:11:40
+ * MATLAB Coder version            : 23.2
+ * C/C++ source code generated on  : 13-Aug-2024 22:10:22
  */
 
 #ifndef LQR_K_H

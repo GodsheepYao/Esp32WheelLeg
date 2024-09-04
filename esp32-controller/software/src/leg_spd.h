@@ -1,8 +1,8 @@
 /*
  * File: leg_spd.h
  *
- * MATLAB Coder version            : 5.5
- * C/C++ source code generated on  : 26-Feb-2023 10:27:33
+ * MATLAB Coder version            : 23.2
+ * C/C++ source code generated on  : 13-Aug-2024 22:10:22
  */
 
 #ifndef LEG_SPD_H

@@ -47,19 +47,6 @@ struct IMUData
 	float zAccel; // m/s^2
 } imuData;
 
-//电机结构体
-//leftJoint[0]:左前关节电机, leftJoint[1]:左后关节电机, leftWheel:左车轮电机
-//rightJoint[0]:右前关节电机, rightJoint[1]:右后关节电机, rightWheel:右车轮电机
-struct Motor
-{
-	float speed;			   // rad/s
-	float angle, offsetAngle;  // rad
-	float voltage, maxVoltage; // V
-	float torque, torqueRatio; // Nm, voltage = torque / torqueRatio
-	float dir;				   // 1 or -1
-	float (*calcRevVolt)(float speed); // 指向反电动势计算函数
-} leftJoint[2], rightJoint[2], leftWheel, rightWheel; //六个电机对象
-
 //腿部姿态结构体
 struct LegPos
 {
@@ -151,17 +138,6 @@ void ADC_Init();
 
 /******* 电机模块 *******/
 
-//初始化一个电机对象
-void Motor_Init(Motor *motor, float offsetAngle, float maxVoltage, float torqueRatio, float dir, float (*calcRevVolt)(float speed))
-{
-	motor->speed = motor->angle = motor->voltage = 0;
-	motor->offsetAngle = offsetAngle;
-	motor->maxVoltage = maxVoltage;
-	motor->torqueRatio = torqueRatio;
-	motor->dir = dir;
-	motor->calcRevVolt = calcRevVolt;
-}
-
 //4010电机反电动势计算函数(输入速度，输出反电动势)
 //测量并拟合出不同电压下对应的电机空载转速，调换自变量和因变量就是本函数
 //由于该测量方法忽略阻力对空载转速的影响，最终抵消反电动势时也会抵消大部分电机本身的阻力
@@ -174,13 +150,6 @@ float Motor_CalcRevVolt4010(float speed)
 float Motor_CalcRevVolt2804(float speed)
 {
 	return 0.000004f * speed * speed * speed - 0.0003f * speed * speed + 0.0266f * speed;
-}
-
-//从CAN总线接收到的数据中解析出电机角度和速度
-void Motor_Update(Motor *motor, uint8_t *data)
-{
-	motor->angle = (*(int32_t *)&data[0] / 1000.0f - motor->offsetAngle) * motor->dir;
-	motor->speed = (*(int16_t *)&data[4] / 10 * 2 * M_PI / 60) * motor->dir;
 }
 
 //设置电机扭矩
@@ -227,33 +196,7 @@ void Motor_SendTask(void *arg)
 	}
 }
 
-/******* CAN通信模块 *******/
 
-//CAN收到数据后进入的回调函数
-void CAN_RecvCallback(uint32_t id, uint8_t *data)
-{
-	switch (id) //根据CAN ID更新各电机数据
-	{
-	case 0x101:
-		Motor_Update(&leftJoint[0], data);
-		break;
-	case 0x102:
-		Motor_Update(&leftJoint[1], data);
-		break;
-	case 0x103:
-		Motor_Update(&leftWheel, data);
-		break;
-	case 0x105:
-		Motor_Update(&rightJoint[0], data);
-		break;
-	case 0x106:
-		Motor_Update(&rightJoint[1], data);
-		break;
-	case 0x107:
-		Motor_Update(&rightWheel, data);
-		break;
-	}
-}
 
 /******* 陀螺仪模块 *******/
 
@@ -759,7 +702,7 @@ void Serial_Task(void *pvParameters)
 	while (1)
 	{
 		// Serial.printf("%f,%f",leftJoint[0].angle, leftJoint[1].angle);
-		// Serial.printf("%f,%f,%f,%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
+		 Serial.printf("leftLegLEN=%f,leftLegANG=%f,rightLegLEN=%f,rightLegANG=%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
 		// Serial.printf("%f,%f,%f\n",imuData.yaw, imuData.pitch, imuData.roll);
 		// Serial.printf("%f,%f,%f,%f,%f,%f\r\n",leftJoint[0].angle, leftJoint[1].angle, leftWheel.angle, rightJoint[0].angle, rightJoint[1].angle, rightWheel.angle);
 		// Serial.printf("%f,%f,%f,%f,%f,%f\r\n",stateVar.theta,stateVar.dTheta,stateVar.x,stateVar.dx,stateVar.phi,stateVar.dPhi);

@@ -3,6 +3,12 @@
 	"files.associations": {
 		"pid.h": "c",
 		"candrive.h": "c",
-		"esp_task_wdt.h": "c"
+		"esp_task_wdt.h": "c",
+		"motorprocess.h": "c",
+		"mwmotor.h": "c",
+		"array": "c",
+		"string": "c",
+		"string_view": "c",
+		"arduino.h": "c"
 	}
 }
