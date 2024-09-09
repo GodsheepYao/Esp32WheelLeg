@@ -41,17 +41,28 @@ MW_MOTOR_ACCESS_INFO MWwheel6 = {.busId = 1,
                                .sender = MotorBusSend, 
                                .notifier = MotorNotice};
 
-//电机结构体
-//leftJoint[0]:左前关节电机, leftJoint[1]:左后关节电机, leftWheel:左车轮电机
-//rightJoint[0]:右前关节电机, rightJoint[1]:右后关节电机, rightWheel:右车轮电机                 
+/**
+ * @brief 电机目标数据
+ * @note 数组位号与电机ID对应
+ */    
+MotorTarget motorTarget[7] = { 0 };
+
+/**
+ * @brief 电机结构体
+ * @note leftJoint[0]:左前关节电机, leftJoint[1]:左后关节电机, leftWheel:左车轮电机
+ *       rightJoint[0]:右前关节电机, rightJoint[1]:右后关节电机, rightWheel:右车轮电机
+ */           
 Motor leftJoint[2], rightJoint[2], leftWheel, rightWheel;
+
+/* 电机控制模式标志位 */
+MOTOR_STATUS MotorStatus = INITIAL_IDLE;
 
 /* 从CAN总线接收到的数据中解析出算法中电机角度和速度 */
 void Motor_Update(Motor *motor, MW_MOTOR_DATA *data) {
 	// motor->angle = (*(int32_t *)&data[0] / 1000.0f - motor->offsetAngle) * motor->dir;
 	// motor->speed = (*(int16_t *)&data[4] / 10 * 2 * M_PI / 60) * motor->dir;
 	motor->angle = (((data->encoderPosEstimate / 9.67f) * 2.0f * M_PI) - motor->offsetAngle) * motor->dir;
-	motor->speed = ((data->encoderPosEstimate / 9.67f) * 2.0f * M_PI / 60.0f) * motor->dir;
+	motor->speed = ((data->encoderVelEstimate / 9.67f) * 2.0f * M_PI) * motor->dir;
 }
 
 /* 用户自创建总线发送函数 */
@@ -75,27 +86,59 @@ void Motor_Init(Motor *motor, float offsetAngle, float maxVoltage, float torqueR
 
 /* 电机周期任务 */
 void Motor_Task(void *arg) {
+    motorTarget[1].torque = 0;
+    motorTarget[2].torque = 0;
+    motorTarget[3].torque = 0;
+    motorTarget[4].torque = 0;
+    motorTarget[5].torque = 0;
+    motorTarget[6].torque = 0;
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	while (1) {
-        printf("1Speed=%f,1Pos=%f,1CalAngle=%f\r\n", MWjoint1.motorData->encoderVelEstimate, MWjoint1.motorData->encoderPosEstimate, rightJoint[0].angle);
-        printf("2Speed=%f,2Pos=%f,2CalAngle=%f\r\n", MWjoint2.motorData->encoderVelEstimate, MWjoint2.motorData->encoderPosEstimate, rightJoint[1].angle);
-        printf("3Speed=%f,3Pos=%f,3CalAngle=%f\r\n", MWwheel3.motorData->encoderVelEstimate, MWwheel3.motorData->encoderPosEstimate, rightWheel.angle);
-        printf("4Speed=%f,4Pos=%f,4CalAngle=%f\r\n", MWjoint4.motorData->encoderVelEstimate, MWjoint4.motorData->encoderPosEstimate, leftJoint[1].angle);
-        printf("5Speed=%f,5Pos=%f,5CalAngle=%f\r\n", MWjoint5.motorData->encoderVelEstimate, MWjoint5.motorData->encoderPosEstimate, leftJoint[0].angle);
-        printf("6Speed=%f,6Pos=%f,6CalAngle=%f\r\n", MWwheel6.motorData->encoderVelEstimate, MWwheel6.motorData->encoderPosEstimate, leftWheel.angle);
-		vTaskDelayUntil(&xLastWakeTime, 100);
+        switch (MotorStatus) {
+            case DIRECT_VELCONTROL:
+                
+                break;
+            case DIRECT_POSCONTROL:
+                
+                break;    
+            case DIRECT_TOQUECONTROL:
+                MWSetControllerMode(MWjoint1.busId, MWjoint1.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+                MWSetControllerMode(MWjoint2.busId, MWjoint2.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+                MWSetControllerMode(MWwheel3.busId, MWwheel3.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+                MWSetControllerMode(MWjoint4.busId, MWjoint4.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+                MWSetControllerMode(MWjoint5.busId, MWjoint5.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+                MWSetControllerMode(MWwheel6.busId, MWwheel6.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+
+                MWTorqueControl(MWjoint1.busId, MWjoint1.nodeId, motorTarget[1].torque);
+                MWTorqueControl(MWjoint2.busId, MWjoint2.nodeId, motorTarget[2].torque);
+                MWTorqueControl(MWwheel3.busId, MWwheel3.nodeId, motorTarget[3].torque);
+                MWTorqueControl(MWjoint4.busId, MWjoint4.nodeId, motorTarget[4].torque);
+                MWTorqueControl(MWjoint5.busId, MWjoint5.nodeId, motorTarget[5].torque);
+                MWTorqueControl(MWwheel6.busId, MWwheel6.nodeId, motorTarget[6].torque);
+                break;
+            default:
+                break;
+        }
+        // printf("1Speed=%f,1Pos=%f,1CalAngle=%f\r\n", MWjoint1.motorData->encoderVelEstimate, MWjoint1.motorData->encoderPosEstimate, rightJoint[0].angle);
+        // printf("2Speed=%f,2Pos=%f,2CalAngle=%f\r\n", MWjoint2.motorData->encoderVelEstimate, MWjoint2.motorData->encoderPosEstimate, rightJoint[1].angle);
+        // printf("3Speed=%f,3Pos=%f,3CalAngle=%f\r\n", MWwheel3.motorData->encoderVelEstimate, MWwheel3.motorData->encoderPosEstimate, rightWheel.angle);
+        // printf("4Speed=%f,4Pos=%f,4CalAngle=%f\r\n", MWjoint4.motorData->encoderVelEstimate, MWjoint4.motorData->encoderPosEstimate, leftJoint[1].angle);
+        // printf("5Speed=%f,5Pos=%f,5CalAngle=%f\r\n", MWjoint5.motorData->encoderVelEstimate, MWjoint5.motorData->encoderPosEstimate, leftJoint[0].angle);
+        // printf("6Speed=%f,6Pos=%f,6CalAngle=%f\r\n", MWwheel6.motorData->encoderVelEstimate, MWwheel6.motorData->encoderPosEstimate, leftWheel.angle);
+		vTaskDelayUntil(&xLastWakeTime, 2);
 	}
 }
 
 /* 电机初始化 */
 void Motor_InitAll() {
 	/* 设置控制模式 */
-	MWSetControllerMode(MWjoint1.busId, MWjoint1.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
-	MWSetControllerMode(MWjoint2.busId, MWjoint2.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
-	MWSetControllerMode(MWwheel3.busId, MWwheel3.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
-    MWSetControllerMode(MWjoint4.busId, MWjoint4.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
-	MWSetControllerMode(MWjoint5.busId, MWjoint5.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
-	MWSetControllerMode(MWwheel6.busId, MWwheel6.nodeId, MW_VELOCITY_CONTROL, MW_DIRECT_CONTROL_INPUT);
+	MWSetControllerMode(MWjoint1.busId, MWjoint1.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+	MWSetControllerMode(MWjoint2.busId, MWjoint2.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+	MWSetControllerMode(MWwheel3.busId, MWwheel3.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+    MWSetControllerMode(MWjoint4.busId, MWjoint4.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+	MWSetControllerMode(MWjoint5.busId, MWjoint5.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+	MWSetControllerMode(MWwheel6.busId, MWwheel6.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
+    MotorStatus = DIRECT_TOQUECONTROL;
 	/* 设置惯量值为0 */
 	MWSetTrajInertia(MWjoint1.busId, MWjoint1.nodeId, 0);
 	MWSetTrajInertia(MWjoint2.busId, MWjoint2.nodeId, 0);
@@ -142,11 +185,11 @@ void Motor_InitAll() {
 	// MWPosControl(1, 6, 5, 0, 0);
 
     /* 算法电机数据初始化 */
-    Motor_Init(&leftJoint[0], -0.108, 24, 0.042f, -1);
-	Motor_Init(&leftJoint[1], 3.677, 24, 0.042f, -1);
+    Motor_Init(&leftJoint[0], -0.1079f, 24, 0.042f, -1);
+	Motor_Init(&leftJoint[1], 3.5498f, 24, 0.042f, -1);
 	Motor_Init(&leftWheel, 0, 24, 0.042f, -1);
-	Motor_Init(&rightJoint[0], 0.523, 24, 0.042f, 1);
-	Motor_Init(&rightJoint[1], -3.506, 24, 0.042f, 1);
+	Motor_Init(&rightJoint[0], -0.0609f, 24, 0.042f, 1);
+	Motor_Init(&rightJoint[1], -3.0200f, 24, 0.042f, 1);
 	Motor_Init(&rightWheel, 0, 24, 0.042f, 1);
 
 	xTaskCreate(Motor_Task, "Motor_Task", 2048, NULL, 5, NULL);

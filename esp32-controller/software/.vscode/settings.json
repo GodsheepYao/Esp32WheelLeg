@@ -9,6 +9,7 @@
 		"array": "c",
 		"string": "c",
 		"string_view": "c",
-		"arduino.h": "c"
+		"arduino.h": "c",
+		"motioncontrol.h": "c"
 	}
 }

@@ -9,8 +9,7 @@ twai_status_info_t status;
 
 /******* CAN通信模块 *******/
 /* CAN接收任务 */
-void CAN_RecvTask(void *arg)
-{
+void CAN_RecvTask(void *arg) {
 	twai_message_t msg;
 	twai_status_info_t status;
 	
@@ -58,8 +57,7 @@ void CAN_SendFrame(uint32_t id, uint8_t *data) {
 }
 
 /* CAN初始化 */
-void CAN_Init(void)
-{
+void CAN_Init(void) {
 	twai_general_config_t twai_conf = {
 		.mode = TWAI_MODE_NORMAL,
 		.tx_io = GPIO_NUM_6,

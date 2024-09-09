@@ -21,6 +21,7 @@
 #include "MWMotor.h"
 #include "MotorProcess.h"
 #include "CANDrive.h"
+#include "MotionControl.h"
 
 /*******************宏定义*******************/
 
@@ -46,14 +47,6 @@ struct IMUData
 	float yawSpd, pitchSpd, rollSpd; // rad/s
 	float zAccel; // m/s^2
 } imuData;
-
-//腿部姿态结构体
-struct LegPos
-{
-	float angle, length;   // rad, m
-	float dAngle, dLength; // rad/s, m/s
-	float ddLength;		   // m/s^2
-} leftLegPos, rightLegPos; //左右腿部姿态
 
 //状态变量结构体
 struct StateVar
@@ -105,22 +98,16 @@ float sourceVoltage = 12; //当前电源电压
 void setup();
 void loop();
 
-void Motor_Init(Motor *motor, float offsetAngle, float maxVoltage, float torqueRatio, float dir);
 float Motor_CalcRevVolt4010(float speed);
 float Motor_CalcRevVolt2804(float speed);
-void Motor_InitAll();
-void Motor_Update(Motor *motor, uint8_t *data);
 void Motor_SetTorque(Motor *motor, float torque);
 void Motor_UpdateVoltage(Motor *motor);
 void Motor_SendTask(void *arg);
-
-void CAN_RecvCallback(uint32_t id, uint8_t *data);
 
 void IMU_Task(void *arg);
 void IMU_Init();
 
 void Ctrl_TargetUpdateTask(void *arg);
-void LegPos_UpdateTask(void *arg);
 void Ctrl_StandupPrepareTask(void *arg);
 void Ctrl_Task(void *arg);
 void Ctrl_Init();
@@ -262,12 +249,12 @@ void IMU_Init()
 	Serial.println("Address: 0x" + String(mpu.getDeviceID(), HEX));
 	mpu.setFullScaleAccelRange(MPU6050_IMU::MPU6050_ACCEL_FS_16);
 	while(mpu.dmpInitialize() != 0);
-	mpu.setXAccelOffset(786);
-	mpu.setYAccelOffset(-295);
-	mpu.setZAccelOffset(1394);
-	mpu.setXGyroOffset(169);
+	mpu.setXAccelOffset(814);
+	mpu.setYAccelOffset(-247);
+	mpu.setZAccelOffset(1290);
+	mpu.setXGyroOffset(167);
 	mpu.setYGyroOffset(12);
-	mpu.setZGyroOffset(-17);
+	mpu.setZGyroOffset(-22);
 	// mpu.CalibrateAccel(6); //测量偏移数据
 	// mpu.CalibrateGyro(6);
 	// mpu.PrintActiveOffsets();
@@ -288,7 +275,7 @@ void Ctrl_TargetUpdateTask(void *arg)
 	{
 		//根据当前腿长计算速度斜坡步长(腿越短越稳定，加减速斜率越大)
 		float legLength = (leftLegPos.length + rightLegPos.length) / 2;
-		speedSlopeStep = -(legLength - 0.07f) * 0.02f + 0.002f;
+		speedSlopeStep = -(legLength - 0.12f) * 0.1f + 0.002f;
 
 		//计算速度斜坡，斜坡值更新到target.speed
 		if(fabs(target.speedCmd - target.speed) < speedSlopeStep)
@@ -321,78 +308,56 @@ void Ctrl_TargetUpdateTask(void *arg)
 	}
 }
 
-//腿部姿态更新任务(根据关节电机数据计算腿部姿态)
-void LegPos_UpdateTask(void *arg)
-{
-	const float lpfRatio = 0.5f; //低通滤波系数(新值的权重)
-	float lastLeftDLength = 0, lastRightDLength = 0;
-	TickType_t xLastWakeTime = xTaskGetTickCount();
-	while (1)
-	{
-		float legPos[2], legSpd[2];
-
-		//计算左腿位置
-		leg_pos(leftJoint[1].angle, leftJoint[0].angle, legPos);
-		leftLegPos.length = legPos[0];
-		leftLegPos.angle = legPos[1];
-
-		//计算左腿速度
-		leg_spd(leftJoint[1].speed, leftJoint[0].speed, leftJoint[1].angle, leftJoint[0].angle, legSpd);
-		leftLegPos.dLength = legSpd[0];
-		leftLegPos.dAngle = legSpd[1];
-
-		//计算左腿腿长加速度
-		leftLegPos.ddLength = ((leftLegPos.dLength - lastLeftDLength) * 1000 / 4) * lpfRatio + leftLegPos.ddLength * (1 - lpfRatio);
-		lastLeftDLength = leftLegPos.dLength;
-
-		//计算右腿位置
-		leg_pos(rightJoint[1].angle, rightJoint[0].angle, legPos);
-		rightLegPos.length = legPos[0];
-		rightLegPos.angle = legPos[1];
-
-		//计算右腿速度
-		leg_spd(rightJoint[1].speed, rightJoint[0].speed, rightJoint[1].angle, rightJoint[0].angle, legSpd);
-		rightLegPos.dLength = legSpd[0];
-		rightLegPos.dAngle = legSpd[1];
-
-		//计算右腿腿长加速度
-		rightLegPos.ddLength = ((rightLegPos.dLength - lastRightDLength) * 1000 / 4) * lpfRatio + rightLegPos.ddLength * (1 - lpfRatio);
-		lastRightDLength = rightLegPos.dLength;
-
-		vTaskDelayUntil(&xLastWakeTime, 4); //每4ms更新一次
-	}
-}
-
 //站立准备任务(将机器人从任意姿态调整到准备站立前的劈叉状态)
 void Ctrl_StandupPrepareTask(void *arg)
 {
 	standupState = StandupState_Prepare;
 
-	//将左腿向后摆
-	Motor_SetTorque(&leftJoint[0], 0.2f);
-	Motor_SetTorque(&leftJoint[1], 0.2f);
-	while(leftLegPos.angle < M_3PI_4)
-		vTaskDelay(5);
-	Motor_SetTorque(&leftJoint[0], 0);
-	Motor_SetTorque(&leftJoint[1], 0);
-	vTaskDelay(1000);
+	// //将左腿向后摆
+	// Motor_SetTorque(&leftJoint[0], 0.2f);
+	// Motor_SetTorque(&leftJoint[1], 0.2f);
+	// while(leftLegPos.angle < M_3PI_4)
+	// 	vTaskDelay(5);
+	// Motor_SetTorque(&leftJoint[0], 0);
+	// Motor_SetTorque(&leftJoint[1], 0);
+	// vTaskDelay(1000);
 
-	//将右腿向前摆
-	Motor_SetTorque(&rightJoint[0], -0.2f);
-	Motor_SetTorque(&rightJoint[1], -0.2f);
-	while(rightLegPos.angle > M_PI_4)
-		vTaskDelay(5);
-	Motor_SetTorque(&rightJoint[0], 0);
-	Motor_SetTorque(&rightJoint[1], 0);
-	vTaskDelay(1000);
+	// //将右腿向前摆
+	// Motor_SetTorque(&rightJoint[0], -0.2f);
+	// Motor_SetTorque(&rightJoint[1], -0.2f);
+	// while(rightLegPos.angle > M_PI_4)
+	// 	vTaskDelay(5);
+	// Motor_SetTorque(&rightJoint[0], 0);
+	// Motor_SetTorque(&rightJoint[1], 0);
+	// vTaskDelay(1000);
 
-	//完成准备动作，关闭电机结束任务
-	Motor_SetTorque(&leftJoint[0], 0);
-	Motor_SetTorque(&leftJoint[1], 0);
-	Motor_SetTorque(&leftWheel, 0);
-	Motor_SetTorque(&rightJoint[0], 0);
-	Motor_SetTorque(&rightJoint[1], 0);
-	Motor_SetTorque(&rightWheel, 0);
+	// //完成准备动作，关闭电机结束任务
+	// Motor_SetTorque(&leftJoint[0], 0);
+	// Motor_SetTorque(&leftJoint[1], 0);
+	// Motor_SetTorque(&leftWheel, 0);
+	// Motor_SetTorque(&rightJoint[0], 0);
+	// Motor_SetTorque(&rightJoint[1], 0);
+	// Motor_SetTorque(&rightWheel, 0);
+
+	//左腿向后摆
+	motorTarget[5].torque = -2.0f;
+	motorTarget[6].torque = 0.2f;
+	while(leftLegPos.angle < (M_3PI_4 - 0.1f))
+		vTaskDelay(5);
+	vTaskDelay(1000);
+	motorTarget[5].torque = 0;
+	motorTarget[6].torque = 0;
+
+	//右腿向前摆
+	motorTarget[1].torque = -1.0f;
+	motorTarget[2].torque = -1.0f;
+	motorTarget[3].torque = 0.2f;
+	while(rightLegPos.angle > (M_PI_4 - 0.2f))
+		vTaskDelay(5);
+	vTaskDelay(1000);
+	motorTarget[1].torque = 0;
+	motorTarget[2].torque = 0;
+	motorTarget[3].torque = 0;
 	
 	standupState = StandupState_Standup;
 
@@ -403,7 +368,7 @@ void Ctrl_StandupPrepareTask(void *arg)
 void Ctrl_Task(void *arg)
 {
 	const float wheelRadius = 0.0625f; //m，车轮半径
-	const float legMass = 0.248f; //kg，腿部质量
+	const float legMass = 1.356f; //kg，腿部质量
 
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -414,7 +379,7 @@ void Ctrl_Task(void *arg)
 
 	//设定初始目标值
 	target.rollAngle = 0.0f;
-	target.legLength = 0.07f;
+	target.legLength = 0.12f;
 	target.speed = 0.0f;
 	target.position = (leftWheel.angle + rightWheel.angle) / 2 * wheelRadius;
 
@@ -471,26 +436,30 @@ void Ctrl_Task(void *arg)
 		//设定车轮电机输出扭矩，为LQR和yaw轴PID输出的叠加
 		if(groundDetector.isTouchingGround) //正常接地状态
 		{
-			Motor_SetTorque(&leftWheel, -lqrOutT * lqrTRatio - yawPID.output);
-			Motor_SetTorque(&rightWheel, -lqrOutT * lqrTRatio + yawPID.output);
+			// Motor_SetTorque(&leftWheel, -lqrOutT * lqrTRatio - yawPID.output);
+			// Motor_SetTorque(&rightWheel, -lqrOutT * lqrTRatio + yawPID.output);
+			motorTarget[6].torque = -(-lqrOutT * lqrTRatio - yawPID.output);
+			motorTarget[3].torque = -lqrOutT * lqrTRatio + yawPID.output;
 		}
 		else //腿部离地状态，关闭车轮电机
 		{
-			Motor_SetTorque(&leftWheel, 0);
-			Motor_SetTorque(&rightWheel, 0);
+			// Motor_SetTorque(&leftWheel, 0);
+			// Motor_SetTorque(&rightWheel, 0);
+			motorTarget[6].torque = 0.0f;
+			motorTarget[3].torque = 0.0f;
 		}
 
 		//根据离地状态修改目标腿长，并计算腿长PID输出
-		PID_CascadeCalc(&legLengthPID, (groundDetector.isTouchingGround && !groundDetector.isCuchioning) ? target.legLength : 0.12f, legLength, dLegLength);
+		PID_CascadeCalc(&legLengthPID, (groundDetector.isTouchingGround && !groundDetector.isCuchioning) ? target.legLength : 0.22f, legLength, dLegLength);
 		//计算roll轴PID输出
 		PID_CascadeCalc(&rollPID, target.rollAngle, imuData.roll, imuData.rollSpd);
 		//根据离地状态计算左右腿推力，若离地则不考虑roll轴PID输出和前馈量
 		float leftForce = legLengthPID.output + ((groundDetector.isTouchingGround && !groundDetector.isCuchioning) ? 6-rollPID.output : 0);
 		float rightForce = legLengthPID.output + ((groundDetector.isTouchingGround && !groundDetector.isCuchioning) ? 6+rollPID.output : 0);
-		if(leftLegPos.length > 0.12f) //保护腿部不能伸太长
-			leftForce -= (leftLegPos.length - 0.12f) * 100;
-		if(rightLegPos.length > 0.12f)
-			rightForce -= (rightLegPos.length - 0.12f) * 100;
+		if(leftLegPos.length > 0.22f) //保护腿部不能伸太长
+			leftForce -= (leftLegPos.length - 0.22f) * 100;
+		if(rightLegPos.length > 0.22f)
+			rightForce -= (rightLegPos.length - 0.22f) * 100;
 		
 		//计算左右腿的地面支持力
 		groundDetector.leftSupportForce = leftForce + legMass * 9.8f - legMass * (leftLegPos.ddLength - imuData.zAccel);
@@ -508,14 +477,15 @@ void Ctrl_Task(void *arg)
 		}
 		if(groundDetector.isCuchioning && legLength < target.legLength) //缓冲状态直到腿长压缩到目标腿长结束
 			groundDetector.isCuchioning = false;
-		groundDetector.isTouchingGround = isTouchingGround;
+		// bool isTouchingGround = true;
+		// groundDetector.isTouchingGround = isTouchingGround;
 
 		//计算左右腿角度差PID输出
 		PID_CascadeCalc(&legAnglePID, 0, leftLegPos.angle - rightLegPos.angle, leftLegPos.dAngle - rightLegPos.dAngle);
 		
 		//计算髋关节扭矩输出，为LQR输出和左右腿角度差PID输出的叠加
-		float leftTp = lqrOutTp * lqrTpRatio - legAnglePID.output * (leftLegPos.length / 0.07f);
-		float rightTp = lqrOutTp * lqrTpRatio + legAnglePID.output * (rightLegPos.length / 0.07f);
+		float leftTp = lqrOutTp * lqrTpRatio - legAnglePID.output * (leftLegPos.length / 0.12f);
+		float rightTp = lqrOutTp * lqrTpRatio + legAnglePID.output * (rightLegPos.length / 0.12f);
 		
 		//使用VMC计算各关节电机输出扭矩
 		float leftJointTorque[2]={0};
@@ -534,12 +504,18 @@ void Ctrl_Task(void *arg)
 			if(standupState == StandupState_None) //未处于起立过程中
 			{
 				//关闭所有电机
-				Motor_SetTorque(&leftWheel, 0);
-				Motor_SetTorque(&rightWheel, 0);
-				Motor_SetTorque(&leftJoint[0], 0);
-				Motor_SetTorque(&leftJoint[1], 0);
-				Motor_SetTorque(&rightJoint[0], 0);
-				Motor_SetTorque(&rightJoint[1], 0);
+				// Motor_SetTorque(&leftWheel, 0);
+				// Motor_SetTorque(&rightWheel, 0);
+				// Motor_SetTorque(&leftJoint[0], 0);
+				// Motor_SetTorque(&leftJoint[1], 0);
+				// Motor_SetTorque(&rightJoint[0], 0);
+				// Motor_SetTorque(&rightJoint[1], 0);
+				motorTarget[1].torque = 0;
+				motorTarget[2].torque = 0;
+				motorTarget[3].torque = 0;
+				motorTarget[4].torque = 0;
+				motorTarget[5].torque = 0;
+				motorTarget[6].torque = 0;
 				//阻塞等待腿部角度回到安全范围，再等待4s后恢复控制(若中途触发了起立则在起立准备完成后直接跳出)
 				while(PROTECT_CONDITION && standupState == StandupState_None)
 				{
@@ -563,11 +539,18 @@ void Ctrl_Task(void *arg)
 				standupState = StandupState_None;
 		}
 
+		Serial.printf("leftJointTorqueForward=%f,leftJointTorqueBack=%f\r\n",-leftJointTorque[0], -leftJointTorque[1]);
+		Serial.printf("rightJointTorqueForward=%f,rightJointTorqueBack=%f\r\n",-rightJointTorque[0],-rightJointTorque[1]);
+		Serial.printf("leftwheel=%f, rightwheel=%f\r\n", -lqrOutT * lqrTRatio - yawPID.output, -lqrOutT * lqrTRatio + yawPID.output);
 		//设定关节电机输出扭矩
-		Motor_SetTorque(&leftJoint[0], -leftJointTorque[0]);
-		Motor_SetTorque(&leftJoint[1], -leftJointTorque[1]);
-		Motor_SetTorque(&rightJoint[0], -rightJointTorque[0]);
-		Motor_SetTorque(&rightJoint[1], -rightJointTorque[1]);
+		// Motor_SetTorque(&leftJoint[0], -leftJointTorque[0]);
+		// Motor_SetTorque(&leftJoint[1], -leftJointTorque[1]);
+		// Motor_SetTorque(&rightJoint[0], -rightJointTorque[0]);
+		// Motor_SetTorque(&rightJoint[1], -rightJointTorque[1]);
+		// motorTarget[4].torque = leftJointTorque[0];
+		// motorTarget[5].torque = leftJointTorque[1];
+		// motorTarget[1].torque = -rightJointTorque[0];
+		// motorTarget[2].torque = -rightJointTorque[1];
 
 		vTaskDelayUntil(&xLastWakeTime, 4); //4ms控制周期
 	}
@@ -660,7 +643,7 @@ public:
 		{
 			target.speedCmd = (data[2] / 100.0f - 1) * 1.0f;
 			target.yawSpeedCmd = -(data[1] / 100.0f - 1) * 1.5f;
-			target.legLength = (data[3] / 200.0f) * 0.02f + 0.07f;
+			target.legLength = (data[3] / 200.0f) * 0.1f + 0.12f;
 		}
 		else if(data[0] == 0xAB) //0xAB开头，表示触发起立过程
 		{
@@ -702,10 +685,10 @@ void Serial_Task(void *pvParameters)
 	while (1)
 	{
 		// Serial.printf("%f,%f",leftJoint[0].angle, leftJoint[1].angle);
-		 Serial.printf("leftLegLEN=%f,leftLegANG=%f,rightLegLEN=%f,rightLegANG=%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
-		// Serial.printf("%f,%f,%f\n",imuData.yaw, imuData.pitch, imuData.roll);
+		//  Serial.printf("leftLegLEN=%f,leftLegANG=%f,rightLegLEN=%f,rightLegANG=%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
+		// Serial.printf("Yaw=%f,Pitch=%f,Roll=%f\n",imuData.yaw, imuData.pitch, imuData.roll);
 		// Serial.printf("%f,%f,%f,%f,%f,%f\r\n",leftJoint[0].angle, leftJoint[1].angle, leftWheel.angle, rightJoint[0].angle, rightJoint[1].angle, rightWheel.angle);
-		// Serial.printf("%f,%f,%f,%f,%f,%f\r\n",stateVar.theta,stateVar.dTheta,stateVar.x,stateVar.dx,stateVar.phi,stateVar.dPhi);
+		// Serial.printf("Theta=%f,dTheta=%f,X=%f,dX=%f,phi=%f,dPhi=%f\r\n",stateVar.theta,stateVar.dTheta,stateVar.x,stateVar.dx,stateVar.phi,stateVar.dPhi);
 		// Serial.printf("%f,%f\r\n", stateVar.theta, stateVar.dTheta);
 		// Serial.printf("%f,%f\r\n",imuData.pitch,imuData.pitchSpd);
 		// Serial.printf("%p\r\n", &speedPID.kp);
