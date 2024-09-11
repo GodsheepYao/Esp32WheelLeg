@@ -249,15 +249,15 @@ void IMU_Init()
 	Serial.println("Address: 0x" + String(mpu.getDeviceID(), HEX));
 	mpu.setFullScaleAccelRange(MPU6050_IMU::MPU6050_ACCEL_FS_16);
 	while(mpu.dmpInitialize() != 0);
-	mpu.setXAccelOffset(814);
-	mpu.setYAccelOffset(-247);
-	mpu.setZAccelOffset(1290);
-	mpu.setXGyroOffset(167);
+	mpu.setXAccelOffset(800);
+	mpu.setYAccelOffset(-287);
+	mpu.setZAccelOffset(1282);
+	mpu.setXGyroOffset(165);
 	mpu.setYGyroOffset(12);
-	mpu.setZGyroOffset(-22);
-	// mpu.CalibrateAccel(6); //测量偏移数据
-	// mpu.CalibrateGyro(6);
-	// mpu.PrintActiveOffsets();
+	mpu.setZGyroOffset(-24);
+	mpu.CalibrateAccel(6); //测量偏移数据
+	mpu.CalibrateGyro(6);
+	mpu.PrintActiveOffsets();
 	mpu.setDMPEnabled(true);
 
 	//开启陀螺仪数据获取任务
@@ -368,7 +368,7 @@ void Ctrl_StandupPrepareTask(void *arg)
 void Ctrl_Task(void *arg)
 {
 	const float wheelRadius = 0.0625f; //m，车轮半径
-	const float legMass = 1.356f; //kg，腿部质量
+	const float legMass = 2.556f; //kg，腿部质量
 
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -438,8 +438,8 @@ void Ctrl_Task(void *arg)
 		{
 			// Motor_SetTorque(&leftWheel, -lqrOutT * lqrTRatio - yawPID.output);
 			// Motor_SetTorque(&rightWheel, -lqrOutT * lqrTRatio + yawPID.output);
-			motorTarget[6].torque = -(-lqrOutT * lqrTRatio - yawPID.output);
-			motorTarget[3].torque = -lqrOutT * lqrTRatio + yawPID.output;
+			// motorTarget[6].torque = -(-lqrOutT * lqrTRatio - yawPID.output);
+			// motorTarget[3].torque = -lqrOutT * lqrTRatio + yawPID.output;
 		}
 		else //腿部离地状态，关闭车轮电机
 		{
@@ -539,7 +539,7 @@ void Ctrl_Task(void *arg)
 				standupState = StandupState_None;
 		}
 
-		Serial.printf("leftJointTorqueForward=%f,leftJointTorqueBack=%f\r\n",-leftJointTorque[0], -leftJointTorque[1]);
+		Serial.printf("leftJointTorqueForward=%f,leftJointTorqueBack=%f\r\n",leftJointTorque[0], leftJointTorque[1]);
 		Serial.printf("rightJointTorqueForward=%f,rightJointTorqueBack=%f\r\n",-rightJointTorque[0],-rightJointTorque[1]);
 		Serial.printf("leftwheel=%f, rightwheel=%f\r\n", -lqrOutT * lqrTRatio - yawPID.output, -lqrOutT * lqrTRatio + yawPID.output);
 		//设定关节电机输出扭矩
@@ -547,10 +547,10 @@ void Ctrl_Task(void *arg)
 		// Motor_SetTorque(&leftJoint[1], -leftJointTorque[1]);
 		// Motor_SetTorque(&rightJoint[0], -rightJointTorque[0]);
 		// Motor_SetTorque(&rightJoint[1], -rightJointTorque[1]);
-		// motorTarget[4].torque = leftJointTorque[0];
-		// motorTarget[5].torque = leftJointTorque[1];
-		// motorTarget[1].torque = -rightJointTorque[0];
-		// motorTarget[2].torque = -rightJointTorque[1];
+		motorTarget[4].torque = leftJointTorque[1];
+		motorTarget[5].torque = leftJointTorque[0];
+		motorTarget[1].torque = -rightJointTorque[0];
+		motorTarget[2].torque = -rightJointTorque[1];
 
 		vTaskDelayUntil(&xLastWakeTime, 4); //4ms控制周期
 	}
@@ -685,7 +685,7 @@ void Serial_Task(void *pvParameters)
 	while (1)
 	{
 		// Serial.printf("%f,%f",leftJoint[0].angle, leftJoint[1].angle);
-		//  Serial.printf("leftLegLEN=%f,leftLegANG=%f,rightLegLEN=%f,rightLegANG=%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
+		 Serial.printf("leftLegLEN=%f,leftLegANG=%f,rightLegLEN=%f,rightLegANG=%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
 		// Serial.printf("Yaw=%f,Pitch=%f,Roll=%f\n",imuData.yaw, imuData.pitch, imuData.roll);
 		// Serial.printf("%f,%f,%f,%f,%f,%f\r\n",leftJoint[0].angle, leftJoint[1].angle, leftWheel.angle, rightJoint[0].angle, rightJoint[1].angle, rightWheel.angle);
 		// Serial.printf("Theta=%f,dTheta=%f,X=%f,dX=%f,phi=%f,dPhi=%f\r\n",stateVar.theta,stateVar.dTheta,stateVar.x,stateVar.dx,stateVar.phi,stateVar.dPhi);

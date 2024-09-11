@@ -162,6 +162,19 @@ void Motor_InitAll() {
     MWSetVelGain(MWjoint5.busId, MWjoint5.nodeId, 0, 0);
     MWSetVelGain(MWwheel6.busId, MWwheel6.nodeId, 0, 0);
 #endif
+    MWSetPosGain(MWjoint1.busId, MWjoint1.nodeId, 20);
+    MWSetPosGain(MWjoint2.busId, MWjoint2.nodeId, 20);
+    MWSetPosGain(MWwheel3.busId, MWwheel3.nodeId, 20);
+    MWSetPosGain(MWjoint4.busId, MWjoint4.nodeId, 20);
+    MWSetPosGain(MWjoint5.busId, MWjoint5.nodeId, 20);
+    MWSetPosGain(MWwheel6.busId, MWwheel6.nodeId, 20);
+
+    MWSetVelGain(MWjoint1.busId, MWjoint1.nodeId, 0.16, 0.32);
+    MWSetVelGain(MWjoint2.busId, MWjoint2.nodeId, 0.16, 0.32);
+    MWSetVelGain(MWwheel3.busId, MWwheel3.nodeId, 0.16, 0.32);
+    MWSetVelGain(MWjoint4.busId, MWjoint4.nodeId, 0.16, 0.32);
+    MWSetVelGain(MWjoint5.busId, MWjoint5.nodeId, 0.16, 0.32);
+    MWSetVelGain(MWwheel6.busId, MWwheel6.nodeId, 0.16, 0.32);
     // MWSetAxisState(1, 1, MW_AXIS_STATE_MOTOR_CALIBRATION);
 	// MWSetAxisState(1, 2, MW_AXIS_STATE_MOTOR_CALIBRATION);
 	// MWSetAxisState(1, 3, MW_AXIS_STATE_MOTOR_CALIBRATION);
@@ -185,11 +198,11 @@ void Motor_InitAll() {
 	// MWPosControl(1, 6, 5, 0, 0);
 
     /* 算法电机数据初始化 */
-    Motor_Init(&leftJoint[0], -0.1079f, 24, 0.042f, -1);
-	Motor_Init(&leftJoint[1], 3.5498f, 24, 0.042f, -1);
+    Motor_Init(&leftJoint[0], 1.746f, 24, 0.042f, -1);
+	Motor_Init(&leftJoint[1], 1.650f, 24, 0.042f, -1);
 	Motor_Init(&leftWheel, 0, 24, 0.042f, -1);
-	Motor_Init(&rightJoint[0], -0.0609f, 24, 0.042f, 1);
-	Motor_Init(&rightJoint[1], -3.0200f, 24, 0.042f, 1);
+	Motor_Init(&rightJoint[0], -1.895f, 24, 0.042f, 1);
+	Motor_Init(&rightJoint[1], -1.835f, 24, 0.042f, 1);
 	Motor_Init(&rightWheel, 0, 24, 0.042f, 1);
 
 	xTaskCreate(Motor_Task, "Motor_Task", 2048, NULL, 5, NULL);
