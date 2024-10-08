@@ -92,6 +92,8 @@ void Motor_Task(void *arg) {
     motorTarget[4].torque = 0;
     motorTarget[5].torque = 0;
     motorTarget[6].torque = 0;
+    vTaskDelay(500);
+    MotorStatus = DIRECT_TOQUECONTROL;
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	while (1) {
         switch (MotorStatus) {
@@ -119,12 +121,7 @@ void Motor_Task(void *arg) {
             default:
                 break;
         }
-        // printf("1Speed=%f,1Pos=%f,1CalAngle=%f\r\n", MWjoint1.motorData->encoderVelEstimate, MWjoint1.motorData->encoderPosEstimate, rightJoint[0].angle);
-        // printf("2Speed=%f,2Pos=%f,2CalAngle=%f\r\n", MWjoint2.motorData->encoderVelEstimate, MWjoint2.motorData->encoderPosEstimate, rightJoint[1].angle);
-        // printf("3Speed=%f,3Pos=%f,3CalAngle=%f\r\n", MWwheel3.motorData->encoderVelEstimate, MWwheel3.motorData->encoderPosEstimate, rightWheel.angle);
-        // printf("4Speed=%f,4Pos=%f,4CalAngle=%f\r\n", MWjoint4.motorData->encoderVelEstimate, MWjoint4.motorData->encoderPosEstimate, leftJoint[1].angle);
-        // printf("5Speed=%f,5Pos=%f,5CalAngle=%f\r\n", MWjoint5.motorData->encoderVelEstimate, MWjoint5.motorData->encoderPosEstimate, leftJoint[0].angle);
-        // printf("6Speed=%f,6Pos=%f,6CalAngle=%f\r\n", MWwheel6.motorData->encoderVelEstimate, MWwheel6.motorData->encoderPosEstimate, leftWheel.angle);
+
 		vTaskDelayUntil(&xLastWakeTime, 2);
 	}
 }
@@ -138,7 +135,6 @@ void Motor_InitAll() {
     MWSetControllerMode(MWjoint4.busId, MWjoint4.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
 	MWSetControllerMode(MWjoint5.busId, MWjoint5.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
 	MWSetControllerMode(MWwheel6.busId, MWwheel6.nodeId, MW_TORQUE_CONTROL, MW_DIRECT_CONTROL_INPUT);
-    MotorStatus = DIRECT_TOQUECONTROL;
 	/* 设置惯量值为0 */
 	MWSetTrajInertia(MWjoint1.busId, MWjoint1.nodeId, 0);
 	MWSetTrajInertia(MWjoint2.busId, MWjoint2.nodeId, 0);
@@ -196,7 +192,7 @@ void Motor_InitAll() {
     // MWPosControl(1, 4, 5, 0, 0);
     // MWPosControl(1, 5, 5, 0, 0);
 	// MWPosControl(1, 6, 5, 0, 0);
-
+#ifdef UP_DEBUG
     /* 算法电机数据初始化 */
     Motor_Init(&leftJoint[0], 1.746f, 24, 0.042f, -1);
 	Motor_Init(&leftJoint[1], 1.650f, 24, 0.042f, -1);
@@ -204,7 +200,14 @@ void Motor_InitAll() {
 	Motor_Init(&rightJoint[0], -1.895f, 24, 0.042f, 1);
 	Motor_Init(&rightJoint[1], -1.835f, 24, 0.042f, 1);
 	Motor_Init(&rightWheel, 0, 24, 0.042f, 1);
-
+#else
+    Motor_Init(&leftJoint[0], -0.1079f, 24, 0.40614f, -1);
+	Motor_Init(&leftJoint[1], 3.5498f, 24, 0.40614f, -1);
+	Motor_Init(&leftWheel, 0, 24, 0.40614f, -1);
+	Motor_Init(&rightJoint[0], -0.0609f, 24, 0.40614f, 1);
+	Motor_Init(&rightJoint[1], -3.0200f, 24, 0.40614f, 1);
+	Motor_Init(&rightWheel, 0, 24, 0.40614f, 1);
+#endif
 	xTaskCreate(Motor_Task, "Motor_Task", 2048, NULL, 5, NULL);
 }
 

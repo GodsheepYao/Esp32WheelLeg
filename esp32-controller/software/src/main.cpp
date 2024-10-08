@@ -249,12 +249,12 @@ void IMU_Init()
 	Serial.println("Address: 0x" + String(mpu.getDeviceID(), HEX));
 	mpu.setFullScaleAccelRange(MPU6050_IMU::MPU6050_ACCEL_FS_16);
 	while(mpu.dmpInitialize() != 0);
-	mpu.setXAccelOffset(800);
-	mpu.setYAccelOffset(-287);
-	mpu.setZAccelOffset(1282);
-	mpu.setXGyroOffset(165);
-	mpu.setYGyroOffset(12);
-	mpu.setZGyroOffset(-24);
+	mpu.setXAccelOffset(810);
+	mpu.setYAccelOffset(-216);
+	mpu.setZAccelOffset(1276);
+	mpu.setXGyroOffset(161);
+	mpu.setYGyroOffset(11);
+	mpu.setZGyroOffset(-22);
 	mpu.CalibrateAccel(6); //测量偏移数据
 	mpu.CalibrateGyro(6);
 	mpu.PrintActiveOffsets();
@@ -275,7 +275,7 @@ void Ctrl_TargetUpdateTask(void *arg)
 	{
 		//根据当前腿长计算速度斜坡步长(腿越短越稳定，加减速斜率越大)
 		float legLength = (leftLegPos.length + rightLegPos.length) / 2;
-		speedSlopeStep = -(legLength - 0.12f) * 0.1f + 0.002f;
+		speedSlopeStep = -(legLength - 0.13f) * 0.1f + 0.002f;
 
 		//计算速度斜坡，斜坡值更新到target.speed
 		if(fabs(target.speedCmd - target.speed) < speedSlopeStep)
@@ -368,18 +368,18 @@ void Ctrl_StandupPrepareTask(void *arg)
 void Ctrl_Task(void *arg)
 {
 	const float wheelRadius = 0.0625f; //m，车轮半径
-	const float legMass = 2.556f; //kg，腿部质量
+	const float legMass = 1.491f; //kg，腿部质量
 
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 
 	//手动为反馈矩阵和输出叠加一个系数，用于手动优化控制效果
 	float kRatio[2][6] = {{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
 						{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}};
-	float lqrTpRatio = 1.0f, lqrTRatio = 1.0f;
+	float lqrTpRatio = 25.0f, lqrTRatio = 6.5f;
 
 	//设定初始目标值
 	target.rollAngle = 0.0f;
-	target.legLength = 0.12f;
+	target.legLength = 0.13f;
 	target.speed = 0.0f;
 	target.position = (leftWheel.angle + rightWheel.angle) / 2 * wheelRadius;
 
@@ -438,8 +438,8 @@ void Ctrl_Task(void *arg)
 		{
 			// Motor_SetTorque(&leftWheel, -lqrOutT * lqrTRatio - yawPID.output);
 			// Motor_SetTorque(&rightWheel, -lqrOutT * lqrTRatio + yawPID.output);
-			// motorTarget[6].torque = -(-lqrOutT * lqrTRatio - yawPID.output);
-			// motorTarget[3].torque = -lqrOutT * lqrTRatio + yawPID.output;
+			motorTarget[6].torque = -(-lqrOutT * lqrTRatio - yawPID.output);
+			motorTarget[3].torque = -lqrOutT * lqrTRatio + yawPID.output;
 		}
 		else //腿部离地状态，关闭车轮电机
 		{
@@ -484,8 +484,8 @@ void Ctrl_Task(void *arg)
 		PID_CascadeCalc(&legAnglePID, 0, leftLegPos.angle - rightLegPos.angle, leftLegPos.dAngle - rightLegPos.dAngle);
 		
 		//计算髋关节扭矩输出，为LQR输出和左右腿角度差PID输出的叠加
-		float leftTp = lqrOutTp * lqrTpRatio - legAnglePID.output * (leftLegPos.length / 0.12f);
-		float rightTp = lqrOutTp * lqrTpRatio + legAnglePID.output * (rightLegPos.length / 0.12f);
+		float leftTp = lqrOutTp * lqrTpRatio - legAnglePID.output * (leftLegPos.length / 0.13f);
+		float rightTp = lqrOutTp * lqrTpRatio + legAnglePID.output * (rightLegPos.length / 0.13f);
 		
 		//使用VMC计算各关节电机输出扭矩
 		float leftJointTorque[2]={0};
@@ -539,20 +539,25 @@ void Ctrl_Task(void *arg)
 				standupState = StandupState_None;
 		}
 
-		Serial.printf("leftJointTorqueForward=%f,leftJointTorqueBack=%f\r\n",leftJointTorque[0], leftJointTorque[1]);
-		Serial.printf("rightJointTorqueForward=%f,rightJointTorqueBack=%f\r\n",-rightJointTorque[0],-rightJointTorque[1]);
+		Serial.printf("LeftTP=%f, RightTP=%f\r\n", leftTp, rightTp);
+		Serial.printf("LeftForceG=%f,RightForceG=%f\r\n",groundDetector.leftSupportForce, groundDetector.rightSupportForce);
+		Serial.printf("leftTorqueAHEAD=%f,leftTorqueBACK=%f\r\n",leftJointTorque[0], leftJointTorque[1]);
+		Serial.printf("rightTorqueAHEAD=%f,rightTorqueBACK=%f\r\n",-rightJointTorque[0],-rightJointTorque[1]);
 		Serial.printf("leftwheel=%f, rightwheel=%f\r\n", -lqrOutT * lqrTRatio - yawPID.output, -lqrOutT * lqrTRatio + yawPID.output);
 		//设定关节电机输出扭矩
 		// Motor_SetTorque(&leftJoint[0], -leftJointTorque[0]);
 		// Motor_SetTorque(&leftJoint[1], -leftJointTorque[1]);
 		// Motor_SetTorque(&rightJoint[0], -rightJointTorque[0]);
 		// Motor_SetTorque(&rightJoint[1], -rightJointTorque[1]);
-		motorTarget[4].torque = leftJointTorque[1];
-		motorTarget[5].torque = leftJointTorque[0];
-		motorTarget[1].torque = -rightJointTorque[0];
-		motorTarget[2].torque = -rightJointTorque[1];
 
-		vTaskDelayUntil(&xLastWakeTime, 4); //4ms控制周期
+		//手动增益为2.0f
+		float tmp_jointK = 1.0;
+		motorTarget[4].torque = leftJointTorque[1] * tmp_jointK;
+		motorTarget[5].torque = leftJointTorque[0] * tmp_jointK;
+		motorTarget[1].torque = -rightJointTorque[0] * tmp_jointK;
+		motorTarget[2].torque = -rightJointTorque[1] * tmp_jointK;
+
+		vTaskDelayUntil(&xLastWakeTime, 4); //2ms控制周期
 	}
 }
 
@@ -643,7 +648,7 @@ public:
 		{
 			target.speedCmd = (data[2] / 100.0f - 1) * 1.0f;
 			target.yawSpeedCmd = -(data[1] / 100.0f - 1) * 1.5f;
-			target.legLength = (data[3] / 200.0f) * 0.1f + 0.12f;
+			target.legLength = (data[3] / 200.0f) * 0.1f + 0.13f;
 		}
 		else if(data[0] == 0xAB) //0xAB开头，表示触发起立过程
 		{
@@ -684,16 +689,25 @@ void Serial_Task(void *pvParameters)
 	Serial.setTimeout(10);
 	while (1)
 	{
-		// Serial.printf("%f,%f",leftJoint[0].angle, leftJoint[1].angle);
-		 Serial.printf("leftLegLEN=%f,leftLegANG=%f,rightLegLEN=%f,rightLegANG=%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
-		// Serial.printf("Yaw=%f,Pitch=%f,Roll=%f\n",imuData.yaw, imuData.pitch, imuData.roll);
-		// Serial.printf("%f,%f,%f,%f,%f,%f\r\n",leftJoint[0].angle, leftJoint[1].angle, leftWheel.angle, rightJoint[0].angle, rightJoint[1].angle, rightWheel.angle);
-		// Serial.printf("Theta=%f,dTheta=%f,X=%f,dX=%f,phi=%f,dPhi=%f\r\n",stateVar.theta,stateVar.dTheta,stateVar.x,stateVar.dx,stateVar.phi,stateVar.dPhi);
+		/* 解算相关输出 */
 		// Serial.printf("%f,%f\r\n", stateVar.theta, stateVar.dTheta);
+		// Serial.printf("Theta=%f,dTheta=%f,X=%f,dX=%f,phi=%f,dPhi=%f\r\n",stateVar.theta,stateVar.dTheta,stateVar.x,stateVar.dx,stateVar.phi,stateVar.dPhi);
+		// Serial.printf("%f,%f",leftJoint[0].angle, leftJoint[1].angle);
+		Serial.printf("leftLegLEN=%f,leftLegANG=%f,rightLegLEN=%f,rightLegANG=%f\r\n",leftLegPos.length, leftLegPos.angle, rightLegPos.length, rightLegPos.angle);
+		// printf("1Speed=%f,1Pos=%f,1CalAngle=%f\r\n", MWjoint1.motorData->encoderVelEstimate, MWjoint1.motorData->encoderPosEstimate, rightJoint[0].angle);
+        // printf("2Speed=%f,2Pos=%f,2CalAngle=%f\r\n", MWjoint2.motorData->encoderVelEstimate, MWjoint2.motorData->encoderPosEstimate, rightJoint[1].angle);
+        // printf("3Speed=%f,3Pos=%f,3CalAngle=%f\r\n", MWwheel3.motorData->encoderVelEstimate, MWwheel3.motorData->encoderPosEstimate, rightWheel.angle);
+        // printf("4Speed=%f,4Pos=%f,4CalAngle=%f\r\n", MWjoint4.motorData->encoderVelEstimate, MWjoint4.motorData->encoderPosEstimate, leftJoint[1].angle);
+        // printf("5Speed=%f,5Pos=%f,5CalAngle=%f\r\n", MWjoint5.motorData->encoderVelEstimate, MWjoint5.motorData->encoderPosEstimate, leftJoint[0].angle);
+        // printf("6Speed=%f,6Pos=%f,6CalAngle=%f\r\n", MWwheel6.motorData->encoderVelEstimate, MWwheel6.motorData->encoderPosEstimate, leftWheel.angle);
+		
+		/* 陀螺仪相关输出 */
+		// Serial.printf("Yaw=%f,Pitch=%f,Roll=%f\n",imuData.yaw, imuData.pitch, imuData.roll);
 		// Serial.printf("%f,%f\r\n",imuData.pitch,imuData.pitchSpd);
-		// Serial.printf("%p\r\n", &speedPID.kp);
-		// Serial.printf("source voltage: %f\r\n", analogRead(0) / 4095.0f * 3.3f * 11 * 12 / 13.5f);
-		vTaskDelay(100);
+
+		/* 目标量相关输出 */
+		Serial.printf("TargetSpeed=%f,TargetYawSpeed=%f,TargetLegLength=%f\r\n", target.speedCmd, target.yawSpeedCmd, target.legLength);
+		vTaskDelay(50);
 	}
 }
 
@@ -747,8 +761,8 @@ void setup()
 	// ADC_Init();
 	CAN_Init();
 	IMU_Init();
-	Motor_InitAll();
 	Ctrl_Init();
+	Motor_InitAll();
 	BT_Init();
 }
 

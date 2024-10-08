@@ -7,7 +7,7 @@ clear;
 % 设定所需符号
 syms phi1 phi2 phi3 phi4;
 syms dphi1 dphi4;
-l1=0.15;l2=0.25;l3=l2;l4=l1;l5=0.12; % 腿部杆长
+l1=0.15;l2=0.25;l3=l2;l4=l1;l5=0.15; % 腿部杆长
 syms xc yc xb yb xd yd; % c,b,d三点的xy坐标
 
 %进行几何计算
