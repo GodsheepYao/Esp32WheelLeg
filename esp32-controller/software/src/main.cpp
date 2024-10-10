@@ -375,11 +375,11 @@ void Ctrl_Task(void *arg)
 	//手动为反馈矩阵和输出叠加一个系数，用于手动优化控制效果
 	float kRatio[2][6] = {{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
 						{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}};
-	float lqrTpRatio = 25.0f, lqrTRatio = 6.5f;
+	float lqrTpRatio = 1.0f, lqrTRatio =1.0f;
 
 	//设定初始目标值
 	target.rollAngle = 0.0f;
-	target.legLength = 0.13f;
+	target.legLength = 0.14f;
 	target.speed = 0.0f;
 	target.position = (leftWheel.angle + rightWheel.angle) / 2 * wheelRadius;
 
@@ -550,7 +550,7 @@ void Ctrl_Task(void *arg)
 		// Motor_SetTorque(&rightJoint[0], -rightJointTorque[0]);
 		// Motor_SetTorque(&rightJoint[1], -rightJointTorque[1]);
 
-		//手动增益为2.0f
+		//手动增益
 		float tmp_jointK = 1.0;
 		motorTarget[4].torque = leftJointTorque[1] * tmp_jointK;
 		motorTarget[5].torque = leftJointTorque[0] * tmp_jointK;

@@ -2,7 +2,7 @@
  * File: _coder_leg_conv_info.c
  *
  * MATLAB Coder version            : 23.2
- * C/C++ source code generated on  : 12-Sep-2024 11:49:17
+ * C/C++ source code generated on  : 10-Oct-2024 14:36:29
  */
 
 /* Include Files */
@@ -63,7 +63,7 @@ mxArray *emlrtMexFcnProperties(void)
                 emlrtMxCreateString("D:\\CyberBeastCode\\Program\\ESP32\\foc-"
                                     "wheel-legged-robot\\matlab\\leg_conv.m"));
   emlrtSetField(xEntryPoints, 0, "TimeStamp",
-                emlrtMxCreateDoubleScalar(739506.66243055556));
+                emlrtMxCreateDoubleScalar(739535.57692129631));
   emlrtSetField(xEntryPoints, 0, "Constructor",
                 emlrtMxCreateLogicalScalar(false));
   emlrtSetField(xEntryPoints, 0, "Visible", emlrtMxCreateLogicalScalar(true));
@@ -78,7 +78,7 @@ mxArray *emlrtMexFcnProperties(void)
                 emlrtMxCreateString("D:\\CyberBeastCode\\Program\\ESP32\\foc-"
                                     "wheel-legged-robot\\matlab\\leg_pos.m"));
   emlrtSetField(xEntryPoints, 1, "TimeStamp",
-                emlrtMxCreateDoubleScalar(739506.66239583329));
+                emlrtMxCreateDoubleScalar(739535.576886574));
   emlrtSetField(xEntryPoints, 1, "Constructor",
                 emlrtMxCreateLogicalScalar(false));
   emlrtSetField(xEntryPoints, 1, "Visible", emlrtMxCreateLogicalScalar(true));
@@ -93,7 +93,7 @@ mxArray *emlrtMexFcnProperties(void)
                 emlrtMxCreateString("D:\\CyberBeastCode\\Program\\ESP32\\foc-"
                                     "wheel-legged-robot\\matlab\\leg_spd.m"));
   emlrtSetField(xEntryPoints, 2, "TimeStamp",
-                emlrtMxCreateDoubleScalar(739506.66240740742));
+                emlrtMxCreateDoubleScalar(739535.57689814817));
   emlrtSetField(xEntryPoints, 2, "Constructor",
                 emlrtMxCreateLogicalScalar(false));
   emlrtSetField(xEntryPoints, 2, "Visible", emlrtMxCreateLogicalScalar(true));
@@ -108,7 +108,7 @@ mxArray *emlrtMexFcnProperties(void)
                 emlrtMxCreateString("D:\\CyberBeastCode\\Program\\ESP32\\foc-"
                                     "wheel-legged-robot\\matlab\\lqr_k.m"));
   emlrtSetField(xEntryPoints, 3, "TimeStamp",
-                emlrtMxCreateDoubleScalar(739507.4894907407));
+                emlrtMxCreateDoubleScalar(739535.588287037));
   emlrtSetField(xEntryPoints, 3, "Constructor",
                 emlrtMxCreateLogicalScalar(false));
   emlrtSetField(xEntryPoints, 3, "Visible", emlrtMxCreateLogicalScalar(true));

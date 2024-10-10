@@ -2,7 +2,7 @@
  * File: _coder_leg_conv_info.h
  *
  * MATLAB Coder version            : 23.2
- * C/C++ source code generated on  : 12-Sep-2024 11:49:17
+ * C/C++ source code generated on  : 10-Oct-2024 14:36:29
  */
 
 #ifndef _CODER_LEG_CONV_INFO_H

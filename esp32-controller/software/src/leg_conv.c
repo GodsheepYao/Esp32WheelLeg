@@ -62,8 +62,8 @@ void leg_conv(float F, float Tp, float phi1, float phi4, float T[2])
   t23_tmp = t7_tmp * 0.075F;
   t47_tmp = t20_tmp - t21_tmp;
   t48_tmp = t175 - t23_tmp;
-  t54_tmp = (t17_tmp - t16_tmp) + 0.12F;
-  t55_tmp = (t19_tmp - t174) + 0.06F;
+  t54_tmp = (t17_tmp - t16_tmp) + 0.125F;
+  t55_tmp = (t19_tmp - t174) + 0.0625F;
   t77_tmp = t47_tmp * t47_tmp + t54_tmp * t54_tmp;
   t81_tmp = t96 * t47_tmp * 0.3F + t6_tmp * t54_tmp * 0.3F;
   t5_tmp = t5_tmp * t47_tmp * 0.3F + t7_tmp * t54_tmp * 0.3F;
@@ -88,8 +88,8 @@ void leg_conv(float F, float Tp, float phi1, float phi4, float T[2])
                                      t77_tmp * t5_tmp * 2.0F) /
                                     2.0F);
   t19_tmp = t20_tmp + t124_tmp / 4.0F;
-  t21_tmp = (t16_tmp + t6_tmp) - 0.06F;
-  t96 = (-t16_tmp - t6_tmp) + 0.06F;
+  t21_tmp = (t16_tmp + t6_tmp) - 0.0625F;
+  t96 = (-t16_tmp - t6_tmp) + 0.0625F;
   t174 = t96 * t96;
   t175 = 1.0F / t96;
   t6_tmp = t19_tmp * t19_tmp;

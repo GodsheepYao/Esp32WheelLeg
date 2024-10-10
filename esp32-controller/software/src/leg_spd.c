@@ -63,8 +63,8 @@ void leg_spd(float dphi1, float dphi4, float phi1, float phi4, float spd[2])
   t17 = t5 * 0.075F;
   t28 = t14_tmp - t15;
   t29 = t16 - t17;
-  t32 = (t11 - t10_tmp) + 0.12F;
-  t33 = (t13 - t12) + 0.06F;
+  t32 = (t11 - t10_tmp) + 0.125F;
+  t33 = (t13 - t12) + 0.0625F;
   t44 = t28 * t28 + t32 * t32;
   t47 = t2 * t28 * 0.3F + t4 * t32 * 0.3F;
   t3 = t3 * t28 * 0.3F + t5 * t32 * 0.3F;
@@ -85,12 +85,12 @@ void leg_spd(float dphi1, float dphi4, float phi1, float phi4, float spd[2])
   t2 = (t17 + t3) * t32 * t4 +
        t28 * (t13 - t56 * ((t11 * t29 + t15 * t33) - t44 * t3 * 2.0F) / 2.0F);
   t12 = t14_tmp + t71 / 4.0F;
-  t16 = (t10_tmp + t77_tmp) - 0.06F;
+  t16 = (t10_tmp + t77_tmp) - 0.0625F;
   t5 *= t76;
   t11 = t5 * t2;
   t32 = t71 * t76;
   t47 = t32 * t2;
-  t2 = (-t10_tmp - t77_tmp) + 0.06F;
+  t2 = (-t10_tmp - t77_tmp) + 0.0625F;
   t56 = t2 * t2;
   t28 = 1.0F / t2;
   t4 = t12 * t12;
