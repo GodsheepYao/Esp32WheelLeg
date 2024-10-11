@@ -275,7 +275,7 @@ void Ctrl_TargetUpdateTask(void *arg)
 	{
 		//根据当前腿长计算速度斜坡步长(腿越短越稳定，加减速斜率越大)
 		float legLength = (leftLegPos.length + rightLegPos.length) / 2;
-		speedSlopeStep = -(legLength - 0.13f) * 0.1f + 0.002f;
+		speedSlopeStep = -(legLength - 0.15f) * 0.1f + 0.002f;
 
 		//计算速度斜坡，斜坡值更新到target.speed
 		if(fabs(target.speedCmd - target.speed) < speedSlopeStep)
@@ -379,7 +379,7 @@ void Ctrl_Task(void *arg)
 
 	//设定初始目标值
 	target.rollAngle = 0.0f;
-	target.legLength = 0.14f;
+	target.legLength = 0.13f;
 	target.speed = 0.0f;
 	target.position = (leftWheel.angle + rightWheel.angle) / 2 * wheelRadius;
 
