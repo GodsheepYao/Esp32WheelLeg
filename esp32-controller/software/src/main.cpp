@@ -557,7 +557,7 @@ void Ctrl_Task(void *arg)
 		motorTarget[1].torque = -rightJointTorque[0] * tmp_jointK;
 		motorTarget[2].torque = -rightJointTorque[1] * tmp_jointK;
 
-		vTaskDelayUntil(&xLastWakeTime, 4); //2ms控制周期
+		vTaskDelayUntil(&xLastWakeTime, 4); //4ms控制周期
 	}
 }
 
